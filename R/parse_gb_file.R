@@ -42,6 +42,9 @@ FasExtract<- function(gb){
   # Extract all letters from fasta
   fasta <- gsub("[^a-zA-Z\\-]", "", fasta)
   fasta <- Reduce(c, strsplit(fasta, ""))
+  fasta <- rdnFixer(fasta)
+  fasta <- paste(fasta, collapse = "")
+  fasta <- Biostrings::DNAString(fasta)
   return(fasta)
 }
 
@@ -58,8 +61,7 @@ FasExtract<- function(gb){
 #' all letters except "a", "t", "c", "g" changed.
 #' @export
 #'
-rdnFixer<- function(gb){
-  seq<- FasExtract(gb)
+rdnFixer<- function(seq){
   seq[which(seq=="u")]<-sample(c("t"), length(which(seq=="u")), TRUE)
   seq[which(seq=="r")]<-sample(c("a", "g"), length(which(seq=="r")), TRUE)
   seq[which(seq=="y")]<-sample(c("c", "t"), length(which(seq=="y")), TRUE)
@@ -73,6 +75,7 @@ rdnFixer<- function(gb){
   seq[which(seq=="v")]<-sample(c("c", "a", "g"), length(which(seq=="v")), TRUE)
   seq[which(seq=="n")]<-sample(c("c", "g", "t", "a"), length(which(seq=="n")), TRUE)
   seq[which(seq=="-")]<-sample(c("c", "g", "t", "a"), length(which(seq=="-")), TRUE)
+  seq <-
   return(seq)
 }
 
