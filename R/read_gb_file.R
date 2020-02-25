@@ -15,10 +15,8 @@ fetch.gb<- function(GI, read=TRUE){
   #the GI can be also accession number
   p<- reutils::efetch(GI, "nucleotide", "gb", complexity = 1)
   #write(reutils::content(p, "text"), file = paste(GI, ".gb", sep=""))
-  if (read) {
-    p <- strsplit(reutils::content(p), "\n")[[1]]
-    return(p)
-  }
+  p <- strsplit(reutils::content(p), "\n")[[1]]
+  return(p)
 }
 
 #' Read the local GB file

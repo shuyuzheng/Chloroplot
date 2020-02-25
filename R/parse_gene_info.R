@@ -1,28 +1,28 @@
-intronCordinates<- function(gb){#The Gene bank file as the input an
-  t<- gb[grep("  intron ", gb)]
-  m<- matrix(0, length(t), 2)
-  for (i in 1:length(t)){
-    crude<-strsplit(t[i], " ")[[1]]
-    cord<-crude[which(crude!=rep("", length(crude)))]
-    if(length(cord)!= 2){
-      stop("Check the GeneBank file: error with their intron row(s)","\n")
-    }
-    cord<-cord[2]
-    if(length(strsplit(cord, "complement")[[1]])==2){
-      cord<-strsplit(cord, "complement")[[1]][2]
-      m[i,]<- strsplit(cord, "\\..")[[1]][c(2,1)]
-    }
-    else if (length(strsplit(cord, "complement")[[1]])==1){
-      m[i,]<- strsplit(cord, "\\..")[[1]]
-    }
-    else {
-      stop("Check the Genebank file: error with cordinates of the intron row(s)")
-    }
-  }
-  m<- gsub(")", "", m)
-  m<- gsub("\\(", "", m)
-  return(m)#giving the table format of the cordinates of the genes with introns (need imporvment to return the gene name as well and their exoin cordinates too)
-}
+# intronCordinates<- function(gb){#The Gene bank file as the input an
+#   t<- gb[grep("  intron ", gb)]
+#   m<- matrix(0, length(t), 2)
+#   for (i in 1:length(t)){
+#     crude<-strsplit(t[i], " ")[[1]]
+#     cord<-crude[which(crude!=rep("", length(crude)))]
+#     if(length(cord)!= 2){
+#       stop("Check the GeneBank file: error with their intron row(s)","\n")
+#     }
+#     cord<-cord[2]
+#     if(length(strsplit(cord, "complement")[[1]])==2){
+#       cord<-strsplit(cord, "complement")[[1]][2]
+#       m[i,]<- strsplit(cord, "\\..")[[1]][c(2,1)]
+#     }
+#     else if (length(strsplit(cord, "complement")[[1]])==1){
+#       m[i,]<- strsplit(cord, "\\..")[[1]]
+#     }
+#     else {
+#       stop("Check the Genebank file: error with cordinates of the intron row(s)")
+#     }
+#   }
+#   m<- gsub(")", "", m)
+#   m<- gsub("\\(", "", m)
+#   return(m)#giving the table format of the cordinates of the genes with introns (need imporvment to return the gene name as well and their exoin cordinates too)
+# }
 
 gene.name<-function(gb, type){
   if(type=="gene"){

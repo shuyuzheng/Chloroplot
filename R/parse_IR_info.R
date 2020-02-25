@@ -5,23 +5,24 @@
 
 #circular rotative function
 cirtick <- function(tick, vector){
-  if(tick > length(vector)-1 || tick < 1){
+  l <- Biostrings::nchar(vector)
+  if(tick > l-1 || tick < 1){
     return(vector)
   }
   else {
-    return(c(vector[(tick+1):length(vector)], vector[1:tick]))
+    return(c(vector[(tick+1):l], vector[1:tick]))
   }
 }
 
 #reverse complement function
-genome.comp.rev <- function(genome){
-  gcr<-genome[length(genome):1]
-  gcr<-gsub("a", "T", gcr)
-  gcr<-gsub("t", "A", gcr)
-  gcr<-gsub("g", "C", gcr)
-  gcr<-gsub("c", "G", gcr)
-  return(tolower(gcr))
-}
+# genome.comp.rev <- function(genome){
+#   gcr<-genome[length(genome):1]
+#   gcr<-gsub("a", "T", gcr)
+#   gcr<-gsub("t", "A", gcr)
+#   gcr<-gsub("g", "C", gcr)
+#   gcr<-gsub("c", "G", gcr)
+#   return(tolower(gcr))
+# }
 
 #' Auxiliary function for parallely detecting phase difference
 #'
@@ -35,36 +36,27 @@ genome.comp.rev <- function(genome){
 #' @return
 #' @export
 fun <- function(shifter, genome){
-  gcr<- genome.comp.rev(genome)
-  cir.genome <-cirtick(shifter, genome)
-  l  <-length(genome)
-  track<- numeric(l+1)
-  track[l+1]<- round(l/4)
-  s.time<- Sys.time()
-  no.value<- FALSE
+  gcr<- Biostrings::reverseComplement(genome)
+  genome.tick<-cirtick(shifter, genome)
+  l<-Biostrings::nchar(genome)
+  stop <- round(l/4)
   for (i in 1:l){
-    track[i]<- sum(cirtick(i, cir.genome)==gcr)
-    i.time<- Sys.time()
-    if ((track[i] - track[l+1])/l > 0.07) {
-      break
-    }
-    if (i.time - s.time > 11){
-      no.value <- TRUE
+    tmp <- sum(compareDNA(cirtick(i, genome.tick), gcr))
+    if ((tmp - stop)/l > 0.07) {
       break
     }
   }
-  if (no.value) {
-    a <- NA
-    return(a)
-  }
-  else {
-    a <- which(track==max(track))+shifter
+  # if (no.value) {
+  #   a <- NA
+  #   return(a)
+  # } else {
+    a <- i +shifter
     if ( a > l){
       return(a - l)
     }
     else {
       return(a)
-    }
+    # }
   }
 }
 
@@ -127,13 +119,9 @@ phase.detector<- function(genome, nCPU = 1){
 #finding the cordinate of the IR region
 True.sequence.finder<- function(genome, phase.difference){
   #phase.difference<-phase.detector(genome)
-  true.search<-cirtick(phase.difference, genome)==genome.comp.rev(genome)
-  true.arm<- round(length(genome)/100)
-  for (i in 1:length(genome)){
-    if (sum(true.search[i:(true.arm+i-1)])==true.arm) {
-      return(i); break
-    }
-  }
+  true.search<-compareDNA(cirtick(phase.difference, genome),
+                          reverseComplement(genome))
+  count <- rle(true.search)
 }
 
 IR1start<-function(phase.difference,True.sequence.finder){
