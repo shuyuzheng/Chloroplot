@@ -9,8 +9,12 @@
 #' @return a character contains the specie's name.
 #' @export
 #'
-sp.name<- function(gb){
-  sp <- gsub("(DEFINITION\\ \\ )|(\\,.*)", "", gb[2], perl = TRUE)
+sp.name<- function(definition, text = FALSE){
+  if (text){
+    sp <- gsub("(DEFINITION\\ \\ )|(\\,.*)", "", gb[2], perl = TRUE)
+  } else {
+    sp <- gsub("(\\,.*)", "", definition, perl = TRUE)
+  }
   return(sp)
 }
 
@@ -42,9 +46,9 @@ FasExtract<- function(gb){
   # Extract all letters from fasta
   fasta <- gsub("[^a-zA-Z\\-]", "", fasta)
   fasta <- Reduce(c, strsplit(fasta, ""))
-  fasta <- rdnFixer(fasta)
   fasta <- paste(fasta, collapse = "")
   fasta <- Biostrings::DNAString(fasta)
+  fasta <- rdnFixer(fasta)
   return(fasta)
 }
 
@@ -61,7 +65,9 @@ FasExtract<- function(gb){
 #' all letters except "a", "t", "c", "g" changed.
 #' @export
 #'
-rdnFixer<- function(seq){
+rdnFixer<- function(genome){
+  seq <- Biostrings::toString(genome)
+  seq <- unlist(strsplit(seq, ""))
   seq[which(seq=="u")]<-sample(c("t"), length(which(seq=="u")), TRUE)
   seq[which(seq=="r")]<-sample(c("a", "g"), length(which(seq=="r")), TRUE)
   seq[which(seq=="y")]<-sample(c("c", "t"), length(which(seq=="y")), TRUE)
@@ -75,7 +81,8 @@ rdnFixer<- function(seq){
   seq[which(seq=="v")]<-sample(c("c", "a", "g"), length(which(seq=="v")), TRUE)
   seq[which(seq=="n")]<-sample(c("c", "g", "t", "a"), length(which(seq=="n")), TRUE)
   seq[which(seq=="-")]<-sample(c("c", "g", "t", "a"), length(which(seq=="-")), TRUE)
-  seq <-
+  seq <- paste(seq, collapse = "")
+  seq <- Biostrings::DNAString(seq)
   return(seq)
 }
 

@@ -7,8 +7,8 @@ irDetect <- function(genome) {
   genome_rc <- Biostrings::reverseComplement(genome)
   l <- Biostrings::nchar(genome_rc)
 
-  for (i in seq(1, 20000, 100)) {
-    ir <- genome_rc[i, i + 1000]
+  for (i in seq(1, 20000, 1000)) {
+    ir <- genome_rc[i:(i + 1000)]
     m <- Biostrings::matchPattern(ir, genome, max.mismatch = 50,
                                   with.indels = TRUE)
     if (length(m) < 1 | m@ranges@width < 900){
