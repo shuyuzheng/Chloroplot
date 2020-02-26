@@ -6,8 +6,18 @@ irDetect <- function(genome) {
   # detect shifter
   genome_rc <- Biostrings::reverseComplement(genome)
   l <- Biostrings::nchar(genome_rc)
-  ir <- genome_rc[1:1000]
-  m <- Biostrings::matchPattern(ir,genome,max.mismatch = 50,with.indels = TRUE)
+
+  for (i in seq(1, 20000, 100)) {
+    ir <- genome_rc[i, i + 1000]
+    m <- Biostrings::matchPattern(ir, genome, max.mismatch = 50,
+                                  with.indels = TRUE)
+    if (length(m) < 1 | m@ranges@width < 900){
+      next()
+    } else {
+      break()
+    }
+  }
+
   if (length(m) < 1){
     ir_table <- data.frame(chr = "chr1",
                            start = 0,
@@ -20,35 +30,39 @@ irDetect <- function(genome) {
                            stringsAsFactors = FALSE)
     return(ir_table)
   }
-  shifter <- m@ranges@start - 1
+
+  shifter <- m@ranges@start - i
 
   # IRA start, end and lenght
   for (i in 1:l){
-    true.search<-compareDNA(cirtick((shifter - 50 + i), genome),
-                            genome_rc)
+    true.search<-compareDNA(cirtick((shifter - 50 + i), genome), genome_rc)
     count <- rle(true.search)
     count_T <- count$lengths[count$values]
-    if ((sum(count_T) - l/4)/l > 0.07) { #length of IR region
+    ir_len <- sort(count_T, decreasing = TRUE)[1:2]
+    if (all(ir_len > 10000)) { #length of IR region
       break()
     }
   }
 
-
-
   count_F <- count$lengths[!count$values]
-  count_len <- length(count_T)
-  ira_s <- shifter - 50 + i + 1
-  ira_len <- count$lengths[1]
-  if (tail(count$values, 1)){
-    ira_len <- ira_len + tail(count$lengths, 1)
-    ira_s <- ira_s - tail(count$lengths, 1)
-    count_T <- count_T
+  count_len <- length(count$lengths)
+  pos <- which(count$lengths %in% ir_len)
+
+  if (min(pos) == 1){
+    ira_s <- shifter - 50 + i + 1
+    ira_len <- count$lengths[1]
+    if (tail(count$values, 1)){
+      ira_len <- ira_len + tail(count$lengths, 1)
+      ira_s <- ira_s - tail(count$lengths, 1)
+    }
+  } else {
+    ira_s <- shifter - 50 + i + 1 + sum(count$lengths[1:(min(pos) - 1)])
+    ira_len <- count$lengths[min(pos)]
   }
 
-
-  for (i in 2:count_len) {
-    if (count_T[i] >= 16 & count_F[i] <= 3){
-      ira_len <- ira_len + count_T[i]
+  for (i in seq((min(pos) + 2), count_len, by = 2)) {
+    if (count$lengths[i] >= 16 & count$lengths[i - 1] <= 3){
+      ira_len <- ira_len + count$lengths[i]
     } else {
       break()
     }
@@ -58,21 +72,13 @@ irDetect <- function(genome) {
 
   # IRB start, end and length
 
-  irb_len <- sort(count_T, decreasing = TRUE)[1:2]
+  irb_len <- count$lengths[max(pos)]
 
-  if (min(irb_len) > 20000){
-    pos <- which(count_T %in% irb_len)
-    irb_len <- count_T[max(pos)]
-    if (length(pos) %in% c(1,2)){
-      irb_s <- sum(count$lengths[1:(max(pos) - 1)]) + shifter + 1
-    }
-  } else {
-    warning("Didn't find IRB")
-  }
+  irb_s <- shifter - 50 + i + 1 + sum(count$lengths[1:(max(pos) - 1)])
 
-  for (i in (max(pos) + 1):count_len) {
-    if (count_T[i] >= 16 & count_F[i] <= 3){
-      irb_len <- irb_len + count_T[i]
+  for (i in seq((max(pos) + 2), count_len, by = 2)) {
+    if (count$lengths[i] >= 16 & count$lengths[i - 1] <= 3){
+      irb_len <- irb_len + count$lengths[i]
     } else {
       break()
     }

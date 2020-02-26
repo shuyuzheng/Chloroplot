@@ -1,28 +1,23 @@
-# Guestions:
-# What should be the correct setting for shifter in function "phase.detector"?
-# Why change lowercase to uppercase and then convert all uppercases to lower cases
-# in function "genome.comp.rev"
 
 #circular rotative function
 cirtick <- function(tick, vector){
-  l <- Biostrings::nchar(vector)
-  if(tick > l-1 || tick < 1){
+  if(tick > length(vector)-1 || tick < 1){
     return(vector)
   }
   else {
-    return(c(vector[(tick+1):l], vector[1:tick]))
+    return(c(vector[(tick+1):length(vector)], vector[1:tick]))
   }
 }
 
 #reverse complement function
-# genome.comp.rev <- function(genome){
-#   gcr<-genome[length(genome):1]
-#   gcr<-gsub("a", "T", gcr)
-#   gcr<-gsub("t", "A", gcr)
-#   gcr<-gsub("g", "C", gcr)
-#   gcr<-gsub("c", "G", gcr)
-#   return(tolower(gcr))
-# }
+genome.comp.rev <- function(genome){
+  gcr<-genome[length(genome):1]
+  gcr<-gsub("a", "T", gcr)
+  gcr<-gsub("t", "A", gcr)
+  gcr<-gsub("g", "C", gcr)
+  gcr<-gsub("c", "G", gcr)
+  return(tolower(gcr))
+}
 
 #' Auxiliary function for parallely detecting phase difference
 #'
@@ -36,27 +31,36 @@ cirtick <- function(tick, vector){
 #' @return
 #' @export
 fun <- function(shifter, genome){
-  gcr<- Biostrings::reverseComplement(genome)
-  genome.tick<-cirtick(shifter, genome)
-  l<-Biostrings::nchar(genome)
-  stop <- round(l/4)
+  gcr<- genome.comp.rev(genome)
+  cir.genome <-cirtick(shifter, genome)
+  l  <-length(genome)
+  track<- numeric(l+1)
+  track[l+1]<- round(l/4)
+  s.time<- Sys.time()
+  no.value<- FALSE
   for (i in 1:l){
-    tmp <- sum(compareDNA(cirtick(i, genome.tick), gcr))
-    if ((tmp - stop)/l > 0.07) {
+    track[i]<- sum(cirtick(i, cir.genome)==gcr)
+    i.time<- Sys.time()
+    if ((track[i] - track[l+1])/l > 0.07) {
+      break
+    }
+    if (i.time - s.time > 11){
+      no.value <- TRUE
       break
     }
   }
-  # if (no.value) {
-  #   a <- NA
-  #   return(a)
-  # } else {
-    a <- i +shifter
+  if (no.value) {
+    a <- NA
+    return(a)
+  }
+  else {
+    a <- which(track==max(track))+shifter
     if ( a > l){
       return(a - l)
     }
     else {
       return(a)
-    # }
+    }
   }
 }
 
@@ -74,7 +78,7 @@ fun <- function(shifter, genome){
 phase.detector<- function(genome, nCPU = 1){
   #detecting the phase difference of the two inverted genomes
   if (nCPU == 1){
-    shifter=84000 #this shifter is faster mode, to be sure set the value to 80000,
+    shifter=80000 #this shifter is faster mode, to be sure set the value to 80000,
     gcr<- genome.comp.rev(genome)
     genome<-cirtick(shifter, genome)
     l<-length(genome)
@@ -96,7 +100,7 @@ phase.detector<- function(genome, nCPU = 1){
   } else {
     # Parallel version
     genome <- genome
-    ini.forw <- 84000
+    ini.forw <- 80000
     ini.back <- ini.forw
 
     mm <- rep(NA, nCPU)
@@ -104,10 +108,10 @@ phase.detector<- function(genome, nCPU = 1){
     snowfall::sfInit(parallel=TRUE, cpus=nCPU)
     while(sum(is.na(mm))==length(mm)){
       snowfall::sfExport("genome", "cirtick", "genome.comp.rev", "fun", "mm",
-               "ini.forw", "ini.back", namespace = "circhler")
+                         "ini.forw", "ini.back", namespace = "circhler")
       mm <-unlist(snowfall::sfLapply(c(seq(ini.forw, ini.forw+nCPU/2*1000-1, 1000),
-                            seq(ini.back, ini.back- nCPU/2*1000, -1000)[-1]),
-                          fun, genome = genome))
+                                       seq(ini.back, ini.back- nCPU/2*1000, -1000)[-1]),
+                                     fun, genome = genome))
       ini.forw <<- ini.forw + nCPU / 2 * 1000
       ini.back <<-ini.back - nCPU / 2 * 1000
     }
@@ -119,9 +123,13 @@ phase.detector<- function(genome, nCPU = 1){
 #finding the cordinate of the IR region
 True.sequence.finder<- function(genome, phase.difference){
   #phase.difference<-phase.detector(genome)
-  true.search<-compareDNA(cirtick(phase.difference, genome),
-                          reverseComplement(genome))
-  count <- rle(true.search)
+  true.search<-cirtick(phase.difference, genome)==genome.comp.rev(genome)
+  true.arm<- round(length(genome)/100)
+  for (i in 1:length(genome)){
+    if (sum(true.search[i:(true.arm+i-1)])==true.arm) {
+      return(i); break
+    }
+  }
 }
 
 IR1start<-function(phase.difference,True.sequence.finder){
