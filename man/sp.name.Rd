@@ -4,7 +4,7 @@
 \alias{sp.name}
 \title{Extract specie's name from GB file}
 \usage{
-sp.name(gb)
+sp.name(definition, text = FALSE)
 }
 \arguments{
 \item{gb}{a large character vector returned by function

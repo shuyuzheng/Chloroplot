@@ -278,15 +278,16 @@ gene.cordinates<- function(gb){
   m<- gsub(">", "", m)
   return(m)#gives a polished table of genes and their cordinates, as the gene names their start and end of first part and the second parts as the first to fifth columns. The orders are reflected with the swapping of values
 }
+#
+# trnNfixer<- function(Genelist){
+#   for (i in 1:length(Genelist[,1])){
+#     if (Genelist[i,1] %in% c("trnN-GUU", "tRNA-Asn")){
+#       Genelist[i,1]<- "trnN"
+#     }
+#   }
+#   return(Genelist)
+# }
 
-trnNfixer<- function(Genelist){
-  for (i in 1:length(Genelist[,1])){
-    if (Genelist[i,1] %in% c("trnN-GUU", "tRNA-Asn")){
-      Genelist[i,1]<- "trnN"
-    }
-  }
-  return(Genelist)
-}
 
 chr.count<- function(word){
   if (length(word)==1){

@@ -4,7 +4,7 @@
 \alias{rdnFixer}
 \title{Randomly fill nucleotides}
 \usage{
-rdnFixer(seq)
+rdnFixer(genome)
 }
 \arguments{
 \item{gb}{A large character vector. It contains the sequence to fix. Each

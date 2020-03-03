@@ -15,3 +15,12 @@ gc_count <- function(genome, view.width = 10){
   return(res)
 }
 
+gc_count_gene <- function(genome, gene_table){
+  genes <- Biostrings::DNAStringSet(genome, start = gene_table$start,
+                                    end = gene_table$end)
+  gc_genes <- Biostrings::alphabetFrequency(genes)
+  gene_table$gc_count <- unlist(apply(gc_genes, 1, function(x){
+    return(round(sum(x[2:3])/sum(x), 2))
+  }))
+  return(gene_table)
+}

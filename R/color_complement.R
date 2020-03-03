@@ -34,3 +34,7 @@ CompColor <- function(color){
   return(out)
 }
 
+unTransparent <- function(color_v){
+  c <- apply(col2rgb(color_v), 2,
+             function(x) rgb(t(x), maxColorValue = 255))
+}

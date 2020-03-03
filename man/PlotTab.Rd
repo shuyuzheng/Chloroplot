@@ -7,14 +7,11 @@
 PlotTab(gbfile, local.file = FALSE, gc.window = 100)
 }
 \arguments{
-\item{gbfile}{A character. It is the path to a local GB file or GenBank
-accession for the interested specie's chloroplast genome. If you want to use
-GenBank accession here, please set parameter \code{local.file} as \code{FALSE}.}
+\item{gbfile}{A character. It is the GI or GenBank accession for the
+interested specie's chloroplast genome files.}
 
-\item{local.file}{A logical value. If it is true the function will try to
-read a gb file from local directory. If it is true it will regard the value
-passed to parameter \code{gbfile} as GenBank accession and try ro fetch
-corresponding data from GeneBank.}
+\item{local.file}{A logical value. If it is \code{TRUE}, the value passed to
+\code{gbfile} should be a local GB file.}
 
 \item{gc.window}{A integer. It indicates the window sized for plot
 GC count.}

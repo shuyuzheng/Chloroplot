@@ -11,9 +11,10 @@
 #'
 sp.name<- function(definition, text = FALSE){
   if (text){
-    sp <- gsub("(DEFINITION\\ \\ )|(\\,.*)", "", gb[2], perl = TRUE)
+    sp <- gsub("(DEFINITION\\ \\ )", "", definition[2], perl = TRUE)
+    sp <- sub("(\\w+\\s+\\w+).*", "\\1", sp, perl = TRUE)
   } else {
-    sp <- gsub("(\\,.*)", "", definition, perl = TRUE)
+    sp <- sub("(\\w+\\s+\\w+).*", "\\1", definition, perl = TRUE)
   }
   return(sp)
 }
@@ -68,19 +69,19 @@ FasExtract<- function(gb){
 rdnFixer<- function(genome){
   seq <- Biostrings::toString(genome)
   seq <- unlist(strsplit(seq, ""))
-  seq[which(seq=="u")]<-sample(c("t"), length(which(seq=="u")), TRUE)
-  seq[which(seq=="r")]<-sample(c("a", "g"), length(which(seq=="r")), TRUE)
-  seq[which(seq=="y")]<-sample(c("c", "t"), length(which(seq=="y")), TRUE)
-  seq[which(seq=="s")]<-sample(c("c", "g"), length(which(seq=="s")), TRUE)
-  seq[which(seq=="w")]<-sample(c("a", "t"), length(which(seq=="w")), TRUE)
-  seq[which(seq=="k")]<-sample(c("g", "t"), length(which(seq=="k")), TRUE)
-  seq[which(seq=="m")]<-sample(c("c", "a"), length(which(seq=="m")), TRUE)
-  seq[which(seq=="b")]<-sample(c("c", "g", "t"), length(which(seq=="b")), TRUE)
-  seq[which(seq=="d")]<-sample(c("a", "g", "t"), length(which(seq=="d")), TRUE)
-  seq[which(seq=="h")]<-sample(c("c", "a", "t"), length(which(seq=="h")), TRUE)
-  seq[which(seq=="v")]<-sample(c("c", "a", "g"), length(which(seq=="v")), TRUE)
-  seq[which(seq=="n")]<-sample(c("c", "g", "t", "a"), length(which(seq=="n")), TRUE)
-  seq[which(seq=="-")]<-sample(c("c", "g", "t", "a"), length(which(seq=="-")), TRUE)
+  seq[which(seq=="U")]<-sample(c("T"), length(which(seq=="U")), TRUE)
+  seq[which(seq=="R")]<-sample(c("A", "G"), length(which(seq=="R")), TRUE)
+  seq[which(seq=="Y")]<-sample(c("C", "T"), length(which(seq=="Y")), TRUE)
+  seq[which(seq=="S")]<-sample(c("C", "G"), length(which(seq=="S")), TRUE)
+  seq[which(seq=="W")]<-sample(c("A", "T"), length(which(seq=="W")), TRUE)
+  seq[which(seq=="K")]<-sample(c("G", "T"), length(which(seq=="K")), TRUE)
+  seq[which(seq=="M")]<-sample(c("C", "A"), length(which(seq=="M")), TRUE)
+  seq[which(seq=="B")]<-sample(c("C", "G", "T"), length(which(seq=="B")), TRUE)
+  seq[which(seq=="D")]<-sample(c("A", "G", "T"), length(which(seq=="D")), TRUE)
+  seq[which(seq=="H")]<-sample(c("C", "A", "T"), length(which(seq=="H")), TRUE)
+  seq[which(seq=="V")]<-sample(c("C", "A", "G"), length(which(seq=="V")), TRUE)
+  seq[which(seq=="N")]<-sample(c("C", "G", "T", "A"), length(which(seq=="N")), TRUE)
+  seq[which(seq=="-")]<-sample(c("C", "G", "T", "A"), length(which(seq=="-")), TRUE)
   seq <- paste(seq, collapse = "")
   seq <- Biostrings::DNAString(seq)
   return(seq)
