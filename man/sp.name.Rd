@@ -4,11 +4,11 @@
 \alias{sp.name}
 \title{Extract specie's name from GB file}
 \usage{
-sp.name(definition, text = FALSE)
+sp.name(definition)
 }
 \arguments{
-\item{gb}{a large character vector returned by function
-\code{\link{fetch.gb}} or \code{\link{read.gb}}}
+\item{definition}{a charactor. It contain the definition field from the
+GenBank file.}
 }
 \value{
 a character contains the specie's name.

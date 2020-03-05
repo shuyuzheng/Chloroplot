@@ -7,8 +7,8 @@
 rdnFixer(genome)
 }
 \arguments{
-\item{gb}{A large character vector. It contains the sequence to fix. Each
-element of the vector represents a nucleotide.}
+\item{genome}{A DNAString object. It is a class defined in \code{Biostrings}
+package. It contains the whole genome sequence of a specie.}
 }
 \value{
 A large character vector. It countains the nucleotide sequence with

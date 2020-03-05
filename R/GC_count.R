@@ -24,3 +24,21 @@ gc_count_gene <- function(genome, gene_table){
   }))
   return(gene_table)
 }
+
+gc_count_ir <- function(genome, ir_table){
+  genes <- Biostrings::DNAStringSet(genome, start = ir_table$start + 1,
+                                    end = ir_table$end)
+  gc_genes <- Biostrings::alphabetFrequency(genes)
+  if (nrow(ir_table) > 4) {
+    gc_genes <- as.data.frame(gc_genes)
+    gc_genes[1, ] <- gc_genes[5, ] <- gc_genes[1, ] + gc_genes[5, ]
+    ir_table$gc_count <- unlist(apply(gc_genes, 1, function(x){
+      return(round(sum(x[2:3])/sum(x), 2))
+    }))
+  } else {
+    ir_table$gc_count <- unlist(apply(gc_genes, 1, function(x){
+      return(round(sum(x[2:3])/sum(x), 2))
+    }))
+  }
+  return(ir_table)
+}

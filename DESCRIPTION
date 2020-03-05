@@ -1,11 +1,11 @@
 Package: chloroplot
 Type: Package
 Title: A package to plot Chloroplast genome.
-Version: 0.1.1
+Version: 0.1.2
 Author: Shuyu Zheng, Ali Amiryousefi
 Maintainer: Shuyu <shuyu.zheng@helsinki.fi>
-Depends: R (>= 3.6.0), snowfall
-Imports: snowfall, dplyr, magrittr, Biostrings, circlize, genbankr
+Depends: R (>= 3.6.0)
+Imports: dplyr, magrittr, Biostrings, circlize, genbankr, coRdon, grDevices, reutils
 Description: It is a package to plot Chloroplast genome.
 License: MIT
 Encoding: UTF-8

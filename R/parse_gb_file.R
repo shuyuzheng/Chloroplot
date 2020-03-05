@@ -3,19 +3,19 @@
 
 #' Extract specie's name from GB file
 #'
-#' @param gb a large character vector returned by function
-#' \code{\link{fetch.gb}} or \code{\link{read.gb}}
+#' @param definition a charactor. It contain the definition field from the
+#' GenBank file.
 #'
 #' @return a character contains the specie's name.
 #' @export
 #'
-sp.name<- function(definition, text = FALSE){
-  if (text){
-    sp <- gsub("(DEFINITION\\ \\ )", "", definition[2], perl = TRUE)
-    sp <- sub("(\\w+\\s+\\w+).*", "\\1", sp, perl = TRUE)
-  } else {
+sp.name<- function(definition){
+  # if (text){
+    # sp <- gsub("(DEFINITION\\ \\ )", "", definition[2], perl = TRUE)
+    # sp <- sub("(\\w+\\s+\\w+).*", "\\1", sp, perl = TRUE)
+  # } else {
     sp <- sub("(\\w+\\s+\\w+).*", "\\1", definition, perl = TRUE)
-  }
+  # }
   return(sp)
 }
 
@@ -59,8 +59,8 @@ FasExtract<- function(gb){
 #' "v", "n" or "-" in genome sequence (randomly) into corresponding nucleotide
 #' "a", "t", "c" or "g".
 #'
-#' @param gb A large character vector. It contains the sequence to fix. Each
-#' element of the vector represents a nucleotide.
+#' @param genome A DNAString object. It is a class defined in \code{Biostrings}
+#' package. It contains the whole genome sequence of a specie.
 #'
 #' @return A large character vector. It countains the nucleotide sequence with
 #' all letters except "a", "t", "c", "g" changed.

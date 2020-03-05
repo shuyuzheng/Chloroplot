@@ -1,7 +1,15 @@
 compareDNA <- function(x,y){
   as.integer(x) == as.integer(y)
 }
-
+#circular rotative function
+cirtick <- function(tick, vector){
+  if(tick > length(vector)-1 || tick < 1){
+    return(vector)
+  }
+  else {
+    return(c(vector[(tick+1):length(vector)], vector[1:tick]))
+  }
+}
 irDetect <- function(genome) {
   # detect shifter
   genome_rc <- Biostrings::reverseComplement(genome)
@@ -9,17 +17,20 @@ irDetect <- function(genome) {
 
   s <- seq(1, (l - 1000), 100)
   seeds <- Biostrings::DNAStringSet(genome, start = s, width = 1000)
-  seeds <- PDict(seeds)
+  seeds <- Biostrings::PDict(seeds)
   m <- Biostrings::matchPDict(seeds, genome_rc)
   m <- as.data.frame(m)
   m <- m[m$width > 900, ]
   if (nrow(m) == 0){
+  gc_count <- Biostrings::letterFrequency(genome, letters = c("C", "G"))
+  gc_count <- round((gc_count[1] + gc_count[2])/l)
   ir_table <- data.frame(chr = "chr1",
                          start = 0,
                          end = l,
                          center = round(l/2),
                          name = "LSC",
                          text = paste("LSC:", l),
+                         gc_count = gc_count,
                          stringsAsFactors = FALSE)
     return(ir_table)
   }
@@ -40,12 +51,15 @@ irDetect <- function(genome) {
   }
 
   if (!all(ir_len > 1000)){
+    gc_count <- Biostrings::letterFrequency(genome, letters = c("C", "G"))
+    gc_count <- round((gc_count[1] + gc_count[2])/l)
     ir_table <- data.frame(chr = "chr1",
                            start = 0,
                            end = l,
                            center = round(l/2),
                            name = "LSC",
                            text = paste("LSC:", l),
+                           gc_count = gc_count,
                            stringsAsFactors = FALSE)
     return(ir_table)
   }
@@ -222,46 +236,243 @@ irDetect <- function(genome) {
       ir_table$center[1] <- l + ir_table$center[1]  - 1
     }
   }
+  return(ir_table)
+}
 
-  # if (irb_e = l){
-  #   ir_table <- data.frame(chr = rep("chr1", 4),
-  #                         start = c(0, ira_s, ira_e + 1, irb_s),
-  #                         end = c(ira_s - 1, ira_e, irb_s -1, irb_e),
-  #                         name = c("LSC", "IRA", "SSC", "IRB"),
-  #                         text = c(paste("LSC:", ira_s -1),
-  #                                  paste("IRA:", ira_len),
-  #                                  paste("SSC:", irb_s - 1 - ira_e),
-  #                                  paste("IRB:", irb_len)),
-  #                         stringsAsFactors = FALSE)
-  #   ir_table$center <- round((ir_table$start + ir_table$end)/2, 0)
-  # } else if (irb_e < l) {
-  #   ir_table <- data.frame(chr = rep("chr1", 5),
-  #                          start = c(0, ira_s, ira_e + 1, irb_s, irb_e + 1),
-  #                          end = c(ira_s - 1, ira_e, irb_s -1, irb_e, l),
-  #                          name = c("LSC", "IRA", "SSC", "IRB", "LSC"),
-  #                          text = c(paste("LSC:", ira_s -1 + l - irb_e),
-  #                                   paste("IRA:", ira_len),
-  #                                   paste("SSC:", irb_s - 1 - ira_e),
-  #                                   paste("IRB:", irb_len),
-  #                                   ""),
-  #                          stringsAsFactors = FALSE)
-  #   ir_table$center <- round((ir_table$start + ir_table$end)/2, 0)
-  #   ir_table$center[1] <- ir_table$center[1] - l + ir_table$center[5]
-  # } else if (irb_e > l) {
-  #   irb_e <- irb_e - l
-  #   ir_table <- data.frame(chr = rep("chr1", 5),
-  #                          start = c(0, irb_e, ira_s, ira_e + 1, irb_s),
-  #                          end = c(irb_e, ira_s - 1, ira_e, irb_s -1, l),
-  #                          name = c("IRB", "LSC", "IRA", "SSC", "IRB"),
-  #                          text = c("",
-  #                                   paste("LSC:", ira_s -1),
-  #                                   paste("IRA:", ira_len),
-  #                                   paste("SSC:", irb_s - 1 - ira_e),
-  #                                   paste("IRB:", irb_len)),
-  #                          stringsAsFactors = FALSE)
-  #   ir_table$center <- round((ir_table$start + ir_table$end)/2, 0)
-  #   ir_table$center[1] <- ir_table$center[1] + ir_table$center[5]
+irDetect_indel <- function(genome) {
+  # expand genome with 1000 bp at the head and tail
+  l <- Biostrings::nchar(genome)
+  genome_rc <- Biostrings::reverseComplement(genome)
+  # split exanded genome to 1000 bp small pieces and match with reverse
+  # complemented expanded genome
+  s <- seq(1, (l - 999))
+  seeds <- Biostrings::DNAStringSet(genome, start = s, width = 1000)
+  seeds <- Biostrings::PDict(seeds)
+  m <- Biostrings::matchPDict(seeds, genome_rc)
+  m <- as.data.frame(m)
+  m <- m[m$width > 0, ]
+  if (nrow(m) == 0){
+    gc_count <- Biostrings::letterFrequency(genome, letters = c("C", "G"))
+    gc_count <- round((gc_count[1] + gc_count[2])/l)
+    ir_table <- data.frame(chr = "chr1",
+                           start = 0,
+                           end = l,
+                           center = round(l/2),
+                           name = "LSC",
+                           text = paste("LSC:", l),
+                           gc_count = gc_count,
+                           stringsAsFactors = FALSE)
+    return(ir_table)
+  }
+
+  # IR start, end and length
+  m <- m[!duplicated(m$group), ]
+  m_l <- nrow(m)
+  step <- m$group[-1] - m$group[-m_l]
+  count <- rle(step)
+  index <- which(count$lengths %in% sort(count$lengths, decreasing = TRUE)[1:2])
+  if (min(index) == 1) {
+    ira_s <- m$group[1] - 1
+    ira_e <- m$group[count$lengths[1] + 1] + 999
+  } else {
+    ira_s_index <- sum(count$lengths[1:(min(index) - 1)]) + 1
+    ira_e_index <- sum(count$lengths[1:min(index)])
+    for (i in seq(min(index) - 2, 1, -2)){
+      if (count$values[i + 1] < 1500){
+        ira_s_index <- ira_s_index - 1 - count$lengths[i]
+      } else {
+        break()
+      }
+    }
+    ira_s <- m$group[ira_s_index] - 1
+    ira_e <- m$group[ira_e_index] + 999
+  }
+
+
+  if (max(index) == length(count$lengths)) {
+    irb_e <- m$group[m_l] + 999
+    irb_s <- m$group[sum(count$lengths[1:(max(index) - 1)]) + 1] - 1
+  } else {
+    irb_e_index <- sum(count$lengths[1:max(index)])
+    for (i in seq(max(index) + 2, length(count$lengths), 2)){
+      if (count$values[i - 1] < 1500){
+        irb_e_index <- irb_e_index + 1 + count$lengths[i]
+      } else {
+        break()
+      }
+    }
+    irb_e <- m$group[irb_e_index + 1] + 999
+    irb_s <- m$group[sum(count$lengths[1:(max(index) - 1)]) + 1] - 1
+  }
+
+  if ((index[2]- index[1]) > 4) {
+    #IRA end
+    ira_e_index <- sum(count$lengths[1:min(index)])
+    for (i in seq(min(index) + 2 , max(index) - 2, 2)){
+      if (count$values[i - 1] < 1500){
+        ira_e_index <- ira_e_index + 1 + count$lengths[i]
+      } else {
+        break()
+      }
+    }
+    ira_e <- m$group[ira_e_index] + 999
+
+    #IRB start
+    irb_s_index <- sum(count$lengths[1:(max(index) - 1)]) + 1
+    for (i in seq(max(index) - 2, min(index) + 2, -2)){
+      if (count$values[i + 1] < 1500){
+        irb_s_index <- irb_s_index - 1 - count$lengths[i]
+      } else {
+        break()
+      }
+    }
+    irb_s <- m$group[irb_s_index] - 1
+  }
+
+  ira_len <- ira_e - ira_s
+  irb_len <- irb_e - irb_s
+  # pos <- which.max(step)
+  # if (length(pos) == 1){
+  #   ira_s <- m$group[1] - 1
+  #   ira_e <- m$group[pos] + 999
+  #   ira_len <- ira_e - ira_s
+  #   irb_s <- m$group[pos + 1] - 1
+  #   irb_e <- m$group[m_l] + 999
+  #   irb_len <- irb_e - irb_s
+  # }
+  # else {
+  #   count <- rle(step)
   # }
 
-  return(ir_table)
+  ira_s2 <- NA
+  irb_e2 <- NA
+  # detect insert and SNP
+  indel_table <- NULL
+
+  # mismatch in IRA
+  ira_step <- step[which(m$group > ira_s & m$group < (ira_e - 999))]
+  ira_mismatch <- which(ira_step > 1)
+  if (length(ira_mismatch) > 0){
+    ira_mismatch <- ira_mismatch + length(step[which(m$group <= ira_s)])
+    start <- m$group[ira_mismatch] + 998
+    end <- m$group[ira_mismatch + 1] - 1
+    # len_jump <- (m$group[index + 1] - m$group[index])
+    # len_jump_rc <- (m$start[index + 1] - m$start[index])
+    type <- rep("mismatch", length(ira_mismatch))
+    # type[which(len_jump < len_jump_rc)] <- "del"
+    # type[which(len_jump > len_jump_rc)] <- "insert"
+    indel_table_a <- data.frame(name = type, start = start, end = end)
+    indel_table_a$text <- rep("", nrow(indel_table_a))
+    indel_table_a$center <- round((indel_table_a$start + indel_table_a$end)/2)
+    indel_table_a$gc_count <- rep("", nrow(indel_table_a))
+    indel_table_a$chr <- rep("chr1", nrow(indel_table_a))
+    indel_table <- rbind.data.frame(indel_table, indel_table_a)
+  }
+
+  # mismatch in IRB
+  irb_step <- step[which(m$group > irb_s & m$group < (irb_e - 999))]
+  irb_mismatch <- which(irb_step > 1)
+  if (length(irb_mismatch) > 0){
+    irb_mismatch <- irb_mismatch + length(step[which(m$group <= irb_s)])
+    start <- m$group[irb_mismatch] + 998
+    end <- m$group[irb_mismatch + 1] - 1
+    # len_jump <- (m$group[index + 1] - m$group[index])
+    # len_jump_rc <- (m$start[index + 1] - m$start[index])
+    type <- rep("mismatch", length(irb_mismatch))
+    # type[which(len_jump < len_jump_rc)] <- "del"
+    # type[which(len_jump > len_jump_rc)] <- "insert"
+    indel_table_b <- data.frame(name = type, start = start, end = end)
+    indel_table_b$text <- rep("", nrow(indel_table_b))
+    indel_table_b$center <- round((indel_table_b$start + indel_table_b$end)/2)
+    indel_table_b$gc_count <- rep("", nrow(indel_table_b))
+    indel_table_b$chr <- rep("chr1", nrow(indel_table_b))
+    indel_table <- rbind.data.frame(indel_table, indel_table_b)
+  }
+
+  # In case origin cut IRB
+  if (irb_e == l) {
+    # shift 1000 bp
+    genome_shift <- c(genome[1001:l], genome[1:1000])
+    s <- seq(l-1998, (l - 999))
+    seeds <- Biostrings::DNAStringSet(genome_shift, start = s, width = 1000)
+    seeds <- Biostrings::PDict(seeds)
+    m <- Biostrings::matchPDict(seeds, genome_rc)
+    m <- as.data.frame(m)
+    m <- m[m$width > 0, ]
+    if (nrow(m) > 0){
+      irb_e2 <- m$group[nrow(m)]
+      irb_len <- irb_len + m$group[nrow(m)]
+    }
+  }
+  # In case origin cut IRA
+  if (ira_s == 0) {
+    # shift 1000 bp
+    genome_shift <- c(genome[(l-999):l], genome[1:(l-1000)])
+    s <- seq(1, 1000)
+    seeds <- Biostrings::DNAStringSet(genome_shift, start = s, width = 1000)
+    seeds <- Biostrings::PDict(seeds)
+    m <- Biostrings::matchPDict(seeds, genome_rc)
+    m <- as.data.frame(m)
+    m <- m[m$width > 0, ]
+    if (nrow(m) > 0){
+      ira_s2 <- l - 1001 + m$group[1]
+      ira_len <- irb_len + 1001 - m$group[1]
+    }
+  }
+
+
+  # IR information table
+  ir_table <- data.frame(chr = rep("chr1", 5),
+                         start = c(0, ira_s, ira_e, irb_s, irb_e),
+                         end = c(ira_s, ira_e, irb_s, irb_e, l),
+                         name = c("LSC", "IRA", "SSC", "IRB", "LSC"),
+                         text = c(paste("LSC:", ira_s + l - irb_e),
+                                  paste("IRA:", ira_len),
+                                  paste("SSC:", irb_s - ira_e),
+                                  paste("IRB:", irb_len),
+                                  ""),
+                         stringsAsFactors = FALSE)
+  ir_table$center <- round((ir_table$start + ir_table$end)/2, 0)
+  ir_table$center[1] <- ir_table$center[1] + round(l/2) + round(ir_table$start[5]/2)
+  if(ir_table$center[1] > l){
+    ir_table$center[1] <- ir_table$center[1] - l
+  }
+
+  if (ira_s == 0) {
+    ir_table$text[5] <- ir_table$text[1]
+    ir_table <- ir_table[-1, ]
+  }
+  if (irb_e == l) {
+    ir_table <- ir_table[-5, ]
+  }
+
+  if (!is.na(irb_e2)){
+    df <- data.frame(chr = "chr1", start = 0, end = irb_e2, name = "IRB",
+                     text = "",center = 0, stringsAsFactors = FALSE)
+    ir_table <- rbind.data.frame(df, ir_table)
+    ir_table$start[2] <- irb_e2 + 1
+    ir_table$center[2] <- ir_table$center[2] - round(irb_e2/2)
+    ir_table$center[5] <- ir_table$center[5] + round(irb_e2/2)
+    if (ir_table$center[5] > l) {
+      ir_table$center[5] <- ir_table$center[5] - l
+    }
+  }
+  if (!is.na(ira_s2)){
+    df <- data.frame(chr = "chr1", start = ira_s2, end =  l, name = "IRA",
+                     text = "",center = 0, stringsAsFactors = FALSE)
+    ir_table <- rbind.data.frame(ir_table, df)
+    ir_table$end[4] <- ira_s2 - 1
+    ir_table$center[1] <- ir_table$center[1] - round((l-ira_s2)/2)
+    if (ir_table$center[1] < 0) {
+      ir_table$center[1] <- l + ir_table$center[1]  - 1
+    }
+  }
+  ir_table <- gc_count_ir(genome, ir_table)
+
+  if (is.null(indel_table)){
+    return(ir_table)
+  } else {
+    return(list(ir_table = ir_table, indel_table = indel_table))
+  }
+
 }

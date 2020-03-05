@@ -26,81 +26,15 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
       genome <- rdnFixer(genome)
       L<- Biostrings::nchar(genome)
       sp_name <- sp.name(gb@definition)
-      genes <- as.data.frame(genbankr::genes(gb))
-
-      genes$gene[is.na(genes$gene)] <- genes$gene_id[is.na(genes$gene)]
-
-      features <- as.data.frame(genbankr::otherFeatures(gb))
-
-      features <- features %>%
-        dplyr::filter(!gene %in% genes$gene)
-
-   features$gene[is.na(features$gene)] <- features$product[is.na(features$gene)]
-
-      if (nrow(features) != 0){
-        gene_table <- genes %>%
-          select(start, end, gene, strand) %>%
-          rbind.data.frame(select(features, start, end, gene, strand)) %>%
-          mutate(chr = rep("chr1", n())) %>%
-          na.omit() %>%
-          select(chr, start, end, gene, strand)
-      } else {
-        gene_table <- genes %>%
-          select(start, end, gene, strand) %>%
-          mutate(chr = rep("chr1", n())) %>%
-          na.omit() %>%
-          select(chr, start, end, gene, strand)
-      }
-
-      for (i in 1:nrow(gene_table)){
-        if (gene_table$strand[i] == "-" ){
-          tmp <- gene_table$start[i]
-          gene_table$start[i] <- gene_table$end[i]
-          gene_table$end[i] <- tmp
-        }
-      }
-      gene_table <- select(gene_table, chr, start, end, gene)
-      gene_table <- unique(gene_table)
-      gene_table$gene[grepl(".*([0-9\\.]+)S.*", gene_table$gene)] <-
-        rrnFixer(gene_table$gene[grepl(".*([0-9\\.]+)S.*", gene_table$gene)])
-      gene_table$gene[grepl("^trn.*", gene_table$gene, ignore.case=TRUE)] <-
-        trnFixer(gene_table$gene[grepl("^trn.*", gene_table$gene, ignore.case=TRUE)])
-
+      gene_table <- geneTableRead(gb, genome)
     }, error = function(e){
-      # gb <<- readLines(gbfile)
-      # genome <<- FasExtract(gb)
-      # genome <<- rdnFixer(genome)
-      # L <<- Biostrings::nchar(genome)
-      # sp_name <<- sp.name(gb, text = TRUE)
-      # gene.tab <- gene.cordinates(gb)
-      # gene_table <<- data.frame(chr = rep("chr1", nrow(gene.tab)),
-      #                          start = as.numeric(gene.tab[, 2]),
-      #                          end = as.numeric(gene.tab[, 3]),
-      #                          gene = gene.tab[,1],
-      #                          stringsAsFactors = FALSE) %>%
-      #   rbind.data.frame(data.frame(chr = rep("chr1", nrow(gene.tab)),
-      #                               start = as.numeric(gene.tab[, 4]),
-      #                               end = as.numeric(gene.tab[, 5]),
-      #                               gene = gene.tab[,1])) %>%
-      #   filter(end != 0) %>%
-      #   na.omit() %>%
-      #   unique()
-      # gene_table <- unique(gene_table)
-      # gene_table <- trnFixer(gene_table)
       gb <<- genbankr::parseGenBank(gbfile)
       sp_name <<- sp.name(gb$DEFINITION)
       genome <<- gb$ORIGIN[[1]]
       genome <<- rdnFixer(genome)
       L <<- Biostrings::nchar(genome)
-      gene_table <<- geneTable(gb, genome)
-      for (i in 1:nrow(gene_table)){
-        if (gene_table$strand[i] == "-" ){
-          tmp <- gene_table$start[i]
-          gene_table$start[i] <- gene_table$end[i]
-          gene_table$end[i] <- tmp
-        }
-      }
-      gene_table <<- select(gene_table, chr, start, end, gene)
+      gene_table <<- geneTableParsed(gb, genome)
+
     })
 
   } else {
@@ -110,87 +44,20 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
       genome <- rdnFixer(genome)
       L<- Biostrings::nchar(genome)
       sp_name <- sp.name(gb@definition)
-      genes <- as.data.frame(genbankr::genes(gb))
-
-      genes$gene[is.na(genes$gene)] <- genes$gene_id[is.na(genes$gene)]
-
-      features <- as.data.frame(genbankr::otherFeatures(gb))
-
-      features <- features %>%
-        dplyr::filter(!gene %in% genes$gene)
-
-      features$gene[is.na(features$gene)] <- features$product[is.na(features$gene)]
-
-      if (nrow(features) != 0){
-        gene_table <- genes %>%
-          select(start, end, gene, strand) %>%
-          rbind.data.frame(select(features, start, end, gene, strand)) %>%
-          mutate(chr = rep("chr1", n())) %>%
-          na.omit() %>%
-          select(chr, start, end, gene, strand)
-        } else {
-          gene_table <- genes %>%
-            select(start, end, gene, strand) %>%
-            mutate(chr = rep("chr1", n())) %>%
-            na.omit() %>%
-            select(chr, start, end, gene, strand)
-        }
-
-      for (i in 1:nrow(gene_table)){
-        if (gene_table$strand[i] == "-" ){
-          tmp <- gene_table$start[i]
-          gene_table$start[i] <- gene_table$end[i]
-          gene_table$end[i] <- tmp
-        }
-      }
-      gene_table <- select(gene_table, chr, start, end, gene)
-      gene_table <- unique(gene_table)
-      gene_table$gene[grepl(".*([0-9\\.]+)S.*", gene_table$gene)] <-
-        rrnFixer(gene_table$gene[grepl(".*([0-9\\.]+)S.*", gene_table$gene)])
-      gene_table$gene[grepl("^trn.*", gene_table$gene, ignore.case=TRUE)] <-
-        trnFixer(gene_table$gene[grepl("^trn.*", gene_table$gene, ignore.case=TRUE)])
+      gene_table <- geneTableRead(gb, genome)
     }, error = function(e){
-      # gb <<- fetch.gb(gbfile)
-      # genome <<- FasExtract(gb)
-      # genome <<- rdnFixer(genome)
-      # L <<- Biostrings::nchar(genome)
-      # sp_name <<- sp.name(gb, text = TRUE)
-      # gene.tab <- gene.cordinates(gb)
-      # gene_table <<- data.frame(chr = rep("chr1", nrow(gene.tab)),
-      #                           start = as.numeric(gene.tab[, 2]),
-      #                           end = as.numeric(gene.tab[, 3]),
-      #                           gene = gene.tab[,1],
-      #                           stringsAsFactors = FALSE) %>%
-      #   rbind.data.frame(data.frame(chr = rep("chr1", nrow(gene.tab)),
-      #                               start = as.numeric(gene.tab[, 4]),
-      #                               end = as.numeric(gene.tab[, 5]),
-      #                               gene = gene.tab[,1])) %>%
-      #   filter(end != 0) %>%
-      #   na.omit() %>%
-      #   unique()
-      #
-      # gene_table <- unique(gene_table)
-      # gene_table <- trnFixer(gene_table)
       gb <<- genbankr::parseGenBank(text = fetch.gb(gbfile))
       sp_name <<- sp.name(gb$DEFINITION)
       genome <<- gb$ORIGIN[[1]]
       genome <<- rdnFixer(genome)
       L <<- Biostrings::nchar(genome)
-      gene_table <<- geneTable(gb, genome)
-      for (i in 1:nrow(gene_table)){
-        if (gene_table$strand[i] == "-" ){
-          tmp <- gene_table$start[i]
-          gene_table$start[i] <- gene_table$end[i]
-          gene_table$end[i] <- tmp
-        }
-      }
-      gene_table <<- select(gene_table, chr, start, end, gene)
+      gene_table <<- geneTableParsed(gb, genome)
     })
   }
 
 
   # 1. IR LSC SSC -----------------------------------------------------------
-  ils <- irDetect(genome)
+  ir <- irDetect_indel(genome)
 
   # 2. Gene table -----------------------------------------------------------
 
@@ -212,16 +79,24 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
   gc_count$chr <- rep("chr1", nrow(gc_count))
   gc_count <- select(gc_count, chr, position, gc_count)
 
-  tables <- list(ir_table = ils, gc_count = gc_count, gc_total = gc_total,
-                 sp_name = sp_name, genome_len = L, gene_table = gene_table,
-                 gene_color = color_table, genome = genome)
+  if (length(ir) == 2){
+    tables <- list(ir_table = ir$ir_table, indel_table = ir$indel_table,
+                   gc_count = gc_count, gc_total = gc_total,
+                   sp_name = sp_name, genome_len = L, gene_table = gene_table,
+                   gene_color = color_table, genome = genome)
+  } else {
+    tables <- list(ir_table = ir, gc_count = gc_count, gc_total = gc_total,
+                   sp_name = sp_name, genome_len = L, gene_table = gene_table,
+                   gene_color = color_table, genome = genome)
+  }
+
   return(tables)
 }
 
 #' Generate Genome plot
 #'
 #' @param plot_tables a list contains information of IR region, gene, and gc
-#' count of the genome. It can be generated by function \code{PlotTab}.
+#' count of the genome. It can be generated by function \code{\link{PlotTab}}.
 #' @param save A logical value. If it is \code{TRUE}, the plot will be saved in
 #' work directory.
 #' @param file.type A charactor. It indicates the format of the file in which
@@ -231,12 +106,18 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #' the plot will be saved. By default, it is set as the specie's name.
 #' @param shadow A logical value. If it is \code{TRUE}, the section of IR
 #' regions will be highlighted by shadows.
+#' @param shadow.color A character. It indicates the color for the shadow
+#' casted from IR sectors.
 #' @param legend A logical value. If it is \code{TRUE}, the legend for gene
 #' colors will be shown.
 #' @param ssc.converse A logical value. If it is \code{TRUE}, the SSC region
 #' will be converted to its reverse complementary version
 #' @param background A character. It indicates the color for the background of
 #' entire plot area.
+#' @param height A vector of numeric value. The elements of it indicat the
+#' height of gene layer, GC count layer and IR region layer, respectively.
+#' Default setting is "0.1, 0.2, 0.07". The taltal circle plot region always
+#' has a radius of 1, so a height of 0.1 means 10\% of the circle radius.
 #' @param gc.color A character. It indicates the color for the lines in gc count
 #' plot.
 #' @param gc.background A character. It indicates the color for the background
@@ -245,31 +126,45 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #' of central area where species' information was shown.
 #' @param ir.color A character. It indicates the color for the background
 #' of IR sectors.
-#' @param shadow.color A character. It indicates the color for the shadow
-#' casted from IR sectors.
 #' @param ssc.color A character. It indicates the color for the background
 #' of SSC sectors.
 #' @param lsc.color A character. It indicates the color for the background
 #' of LSC sectors.
-#' @param height A vector of numeric value. The elements of it indicat the
-#' height of gene layer, GC count layer and IR region layer, respectively.
-#' Default setting is "0.1, 0.2, 0.07". The taltal circle plot region always
-#' has a radius of 1, so a height of 0.1 means 10% of the circle radius.
+#' @param ir_gc A logical value. If it is \code{TRUE}, the gc content for
+#' IR, LSC, and SSC regions will be plot with deep colors.
+#' @param gc_per_gene A logical value. If it is \code{TRUE}, the gc content for
+#' each gene will be plot on the gene layer with deep colors.
+#' @param pseudo A logical value. If it is \code{TRUE}, the pseudo genes (if
+#' there is some in the species) will be marked with a "*" at the end of the
+#' labels.
+#' @param cu_bias A logical value. If it is \code{TRUE}, the condon usage bias
+#' metric for each gene will be shown in the labels. The metric “Measure
+#' Independent of Length and Composition (MILC)” was used for evaluate the bias.
+#' You can find more details in the reference paper.
+#' @param customize_ring1 coming soon
+#' @param customize_ring2 coming soon
 #'
 #' @return  A plot for chloroplast genome.
+#'
+#' @references Supek, Fran, and Kristian Vlahovicek. “Comparison of codon usage
+#' measures and their applicability in prediction of microbial gene
+#' expressivity.” BMC bioinformatics vol. 6 182. 19 Jul.
+#' 2005, doi:10.1186/1471-2105-6-182
 #'
 #' @importFrom magrittr %>%
 #' @import dplyr
 #' @export
-#'
 PlotGenome <- function(plot_tables, save = TRUE, file.type = "pdf",
-                       file.name = NULL, shadow = TRUE, legend = TRUE,
-                       ssc.converse = FALSE, gc_per_gene = TRUE,
-                       background = "grey90", gc.color = "grey30",
+                       file.name = NULL, shadow = TRUE,
+                       shadow.color = "#0000FF20", legend = TRUE,
+                       ssc.converse = FALSE, background = "grey90",
+                       height = c(0.1, 0.2, 0.07), gc.color = "grey30",
                        gc.background = "grey70", info.background = "black",
-                       ir.color = "#2F3941", shadow.color = "#0000FF20",
-                       ssc.color = "#82B6E2", lsc.color = "#299E96",
-                       height = c(0.1, 0.2, 0.07)){
+                       ir.color = "#2F3941", ssc.color = "#82B6E2",
+                       lsc.color = "#299E96", ir_gc = TRUE,
+                       gc_per_gene = TRUE, pseudo = TRUE,
+                       cu_bias = TRUE, customize_ring1 = NULL,
+                       customize_ring2 = NULL){
 
   # Modify gene table
   if (ssc.converse){
@@ -281,22 +176,42 @@ PlotGenome <- function(plot_tables, save = TRUE, file.type = "pdf",
       gene_table <- SSCrev(plot_tables$gene_table,
          SSCs = plot_tables$ir_table$start[plot_tables$ir_table$name == "SSC"],
          SSCe = plot_tables$ir_table$end[plot_tables$ir_table$name == "SSC"])
-}
-
+      }
   } else {
     gene_table <- plot_tables$gene_table
   }
 
+  # gene labels
+  gene_table$gene_label <- gene_table$gene
+  if (cu_bias){
+    gene_table$gene_label <- apply(gene_table[, c("gene_label", "cu_bias")], 1,
+                          function(x){
+                            if (is.na(x[2])){
+                              return(x[1])
+                            } else {
+                              return(paste0(x[1], " (",
+                                            signif(as.numeric(x[2]), 2), ")"))
+                            }
+                          })
+  }
+
+  if (pseudo){
+    gene_table$gene_label <- apply(gene_table[, c("gene_label", "pseudo")], 1,
+                                   function(x){
+                                     if (x[2]){
+                                       return(paste0(x[1], " *"))
+                                     } else {
+                                       return(x[1])
+                                     }
+                                   })
+  }
   genome <- plot_tables$genome
-  gene_table_r <- filter(gene_table, start > end) %>%
-    rename(start = "end", end = "start") %>%
-    select(chr, start, end, gene, col) %>%
+  gene_table_r <- filter(gene_table, strand == "-") %>%
+    select(chr, start, end, gene, col, gc_count, gene_label) %>%
     arrange(start)
-  gene_table_r <- gc_count_gene(genome, gene_table_r)
-  gene_table_f <- filter(gene_table, start < end) %>%
-    select(chr, start, end, gene, col) %>%
+  gene_table_f <- filter(gene_table, strand == "+") %>%
+    select(chr, start, end, gene, col, gc_count, gene_label) %>%
     arrange(start)
-  gene_table_f <- gc_count_gene(genome, gene_table_f)
 
   # Set colors
   plot_tables$ir_table$bg_col <- rep(NA, nrow(plot_tables$ir_table))
@@ -312,8 +227,15 @@ PlotGenome <- function(plot_tables, save = TRUE, file.type = "pdf",
   plot_tables$ir_table$inf_col[plot_tables$ir_table$name=="SSC"] <- CompColor(ssc.color)
   plot_tables$ir_table$inf_col[grepl("IR", plot_tables$ir_table$name)] <- CompColor(ir.color)
 
+  if ("indel_table" %in% names(plot_tables)){
+    plot_tables$indel_table$bg_color <- rep("White", #Transparent("#FFFFFF", 0.9),
+                                            nrow(plot_tables$indel_table))
+  }
+
   L <- plot_tables$genome_len
 
+  plot_tables$ir_table$y <- rep(0.25, nrow(plot_tables$ir_table))
+  plot_tables$ir_table$y[grepl("IR", plot_tables$ir_table$name)] <- 0.75
   # Initialize the plot device
   if (save){
     if (is.null(file.name)){
@@ -342,8 +264,6 @@ PlotGenome <- function(plot_tables, save = TRUE, file.type = "pdf",
     rotate <- -90
   }
 
-
-
   circlize::circos.clear()
   circlize::circos.par(start.degree = rotate,
                        gap.after = 0,
@@ -361,11 +281,12 @@ PlotGenome <- function(plot_tables, save = TRUE, file.type = "pdf",
 
   # 1.2. gene label outside
 
-  circlize::circos.genomicLabels(gene_table_r, labels.column = 4,
+  circlize::circos.genomicLabels(gene_table_r, labels = gene_table_r$gene_label,
                                  side = "outside",cex = 0.5,
                                  connection_height = circlize::convert_height(3, "mm"),
-                                 labels_height = max(strwidth(gene_table_r$gene, cex = 0.5,
-                                                              font = par("font")))
+                                 labels_height = max(graphics::strwidth(gene_table_r$gene_label,
+                                                              cex = 0.5,
+                                                              font = graphics::par("font")))
                                  )
   # Background
   circlize::draw.sector(0, 360,
@@ -379,44 +300,63 @@ PlotGenome <- function(plot_tables, save = TRUE, file.type = "pdf",
                                 ylim = c(-1, 1), bg.border = NA,
                                 track.height = height[1], #circlize::convert_height(10, "mm"),
                                 panel.fun = function(region, value, ...) {
-                                  # genes lay on forward chain
+
                                   if(gc_per_gene){
+                                    # genes lay on forward chain
                                     circlize::circos.genomicRect(
                                       gene_table_f[, c("start", "end")],
                                       value = gene_table_f$gene,
                                       ybottom = - gene_table_f$gc_count,
                                       ytop = 0,
-                                      col = unTransparent(gene_table_f$col),
+                                      col = gene_table_f$col,
                                       border = NA)
+                                    circlize::circos.genomicRect(
+                                      gene_table_f[, c("start", "end")],
+                                      value = gene_table_f$gene,
+                                      ybottom = -1,
+                                      ytop = 0,
+                                      lwd = 0.5,
+                                      col = Transparent(gene_table_f$col, 0.7),
+                                      border = NA
+                                    )
+
+                                    # genes lay on reverse chain
                                     circlize::circos.genomicRect(
                                       gene_table_r[, c("start", "end")],
                                       value = gene_table_r$gene,
                                       ybottom = 0,
                                       ytop = gene_table_r$gc_count,
-                                      col = unTransparent(gene_table_r$col),
+                                      col = gene_table_r$col,
                                       border = NA)
+                                    circlize::circos.genomicRect(
+                                      gene_table_r[, c("start", "end")],
+                                      value = gene_table_r$gene,
+                                      ybottom = 0,
+                                      ytop = 1,
+                                      lwd = 0.5,
+                                      col = Transparent(gene_table_r$col, 0.7),
+                                      border = NA
+                                    )
+                                  } else {
+                                    # genes lay on forward chain
+                                    circlize::circos.genomicRect(
+                                      gene_table_f[, c("start", "end")],
+                                      value = gene_table_f$gene,
+                                      ybottom = -1,
+                                      ytop = 0,
+                                      lwd = 0.5,
+                                      col = gene_table_f$col
+                                    )
+
+                                    circlize::circos.genomicRect(
+                                      gene_table_r[, c("start", "end")],
+                                      value = gene_table_r$gene,
+                                      ybottom = 0,
+                                      ytop = 1,
+                                      lwd = 0.5,
+                                      col = gene_table_r$col
+                                    )
                                   }
-                                  circlize::circos.genomicRect(
-                                    gene_table_f[, c("start", "end")],
-                                    value = gene_table_f$gene,
-                                    ybottom = -1,
-                                    ytop = 0,
-                                    lwd = 0.5,
-                                    col = gene_table_f$col,
-                                    #border = NA
-                                    )
-
-                                  # genes lay on reverse chain
-                                  circlize::circos.genomicRect(
-                                    gene_table_r[, c("start", "end")],
-                                    value = gene_table_r$gene,
-                                    ybottom = 0,
-                                    ytop = 1,
-                                    lwd = 0.5,
-                                    col = gene_table_r$col,
-                                    #border = NA
-                                    )
-
 
                                   # the bars in the middle indicate the IR, SSR, LSR
                                   circlize::circos.rect(xleft = plot_tables$ir_table$start,
@@ -430,20 +370,22 @@ PlotGenome <- function(plot_tables, save = TRUE, file.type = "pdf",
 
   # 4.5. gene labels inside
 
-  circlize::circos.genomicLabels(gene_table_f, labels.column = 4,
+  circlize::circos.genomicLabels(gene_table_f, labels = gene_table_f$gene_label,
                                  side = "inside", cex = 0.5,
                                  connection_height = circlize::convert_height(3, "mm"),
-                                 labels_height = max(strwidth(gene_table_r$gene, cex = 0.5,
-                                                              font = par("font"))))
+                                 labels_height = max(graphics::strwidth(gene_table_r$gene_label,
+                                                              cex = 0.5,
+                                                              font = graphics::par("font"))))
 
 
   # 6. Arrow outside gnome axis
   circlize::circos.track(ylim = c(0, 1), track.height = 0.05, bg.border = NA,
                          track.margin = c(0, circlize::convert_height(1, "mm")),
                          panel.fun = function(x, y) {
-                           circlize::circos.arrow(x1 = 0,
-                                                  x2 = L %/% 35,
+                           circlize::circos.arrow(x1 = L - L %/% 40,
+                                                  x2 = L,
                                                   y = 1,
+                                                  arrow.position="start",
                                                   col = MildColor(background),
                                                   border = NA,
                                                   arrow.head.length = circlize::convert_x(3, "mm"),
@@ -462,10 +404,9 @@ PlotGenome <- function(plot_tables, save = TRUE, file.type = "pdf",
                            circlize::circos.lines(x, y, type = "h",
                                                   baseline = "top",
                                                   col = gc.color, lwd = 0.6)
-                           circlize::circos.arrow(x1= L - L %/% 40,
-                                                  x2= L,
+                           circlize::circos.arrow(x1= 0,
+                                                  x2= L %/% 35,
                                                   y= 0.9,
-                                                  arrow.position="start",
                                                   col=MildColor(gc.color),
                                                   border=NA,
                                                   arrow.head.length=circlize::convert_x(3, "mm"),
@@ -486,16 +427,45 @@ PlotGenome <- function(plot_tables, save = TRUE, file.type = "pdf",
 
   # 8. inner ring for IR, SSR, LSR
   circlize::circos.genomicTrack(plot_tables$ir_table, bg.border = NA,
-                                ylim = c(0, 3),track.height = height[3],
+                                ylim = c(0, 1),track.height = height[3],
                                 panel.fun = function(region, value, ...) {
-                                  circlize::circos.rect(xleft = plot_tables$ir_table$start,
-                                                        ybottom = 0,#circlize::convert_y(0, "mm"),
-                                                        xright = plot_tables$ir_table$end,
-                                                        ytop = 3,#circlize::convert_y(3, "mm"),
-                                                        col = plot_tables$ir_table$bg_col,
-                                                        border = NA)
+                                  if (ir_gc){
+                                    circlize::circos.rect(xleft = plot_tables$ir_table$start,
+                                                          ybottom = 0,#circlize::convert_y(0, "mm"),
+                                                          xright = plot_tables$ir_table$end,
+                                                          ytop = 1,#circlize::convert_y(3, "mm"),
+                                                          col = Transparent(plot_tables$ir_table$bg_col, 0.7),
+                                                          border = NA)
+                                    circlize::circos.rect(xleft = plot_tables$ir_table$start,
+                                                          ybottom =0,#circlize::convert_y(0, "mm"),
+                                                          xright = plot_tables$ir_table$end,
+                                                          ytop =  plot_tables$ir_table$gc_count,#circlize::convert_y(3, "mm"),
+                                                          col = plot_tables$ir_table$bg_col,
+                                                          border = NA)
+                                  } else {
+                                    circlize::circos.rect(xleft = plot_tables$ir_table$start,
+                                                          ybottom = 0,#circlize::convert_y(0, "mm"),
+                                                          xright = plot_tables$ir_table$end,
+                                                          ytop = 1,#circlize::convert_y(3, "mm"),
+                                                          col = plot_tables$ir_table$bg_col,
+                                                          border = NA)
+                                  }
+                                  if ("indel_table" %in% names(plot_tables)){
+                                    circlize::circos.rect(xleft = plot_tables$indel_table$start,
+                                                          ybottom = 0,#circlize::convert_y(0, "mm"),
+                                                          xright = plot_tables$indel_table$end,
+                                                          ytop = 1,#circlize::convert_y(3, "mm"),
+                                                          col = plot_tables$indel_table$bg_col,
+                                                          border = NA)
+                                    circlize::circos.points(x = plot_tables$indel_table$center,
+                                                            y = 0,
+                                                            col = "red",
+                                                            pch = 20,
+                                                            cex = 0.2)
+                                  }
+
                                   circlize::circos.text(x = plot_tables$ir_table$center,
-                                                        y = 1.5, cex = 0.7,
+                                                        y = plot_tables$ir_table$y, cex = 0.7,
                                                         labels = plot_tables$ir_table$text,
                                                         facing = "bending.inside",
                                                         col = plot_tables$ir_table$inf_col,
@@ -510,32 +480,49 @@ PlotGenome <- function(plot_tables, save = TRUE, file.type = "pdf",
                                                             track.index = 8),
                         rou2 = 0,
                         col = info.background, border = NA)
-  text(0,0.05, plot_tables$sp_name, font=4, cex = 0.9, col = info.color)
-  text(0,0, paste(prettyNum(L, big.mark = ","), "bp", " "),
+  graphics::text(0,0.05, plot_tables$sp_name, font=4, cex = 0.9, col = info.color)
+  graphics::text(0,0, paste(prettyNum(L, big.mark = ","), "bp", " "),
        font=4, cex = 0.9, col = info.color)
-  text(0,-0.05,paste("GC:",round(plot_tables$gc_total, 2)*100,"%"),
+  graphics::text(0,-0.05,paste("GC:",round(plot_tables$gc_total, 2)*100,"%"),
        font=4, cex = 0.9, col = info.color)
 
   # Highlight IR
 
+
   if (shadow & (nrow(plot_tables$ir_table) >= 4)){
+
     pos_s=circlize::circlize(plot_tables$ir_table$start[which(grepl("IR",
-                                                  plot_tables$ir_table$name))],
+                                                                    plot_tables$ir_table$name))],
                              1, sector.index = "chr1", track.index = 1)
     pos_e=circlize::circlize(plot_tables$ir_table$end[which(grepl("IR",
-                                                  plot_tables$ir_table$name))],
+                                                                  plot_tables$ir_table$name))],
                              1, sector.index = "chr1", track.index = 1)
     for (i in 1:nrow(pos_s)) {
       circlize::draw.sector(pos_s[i, "theta"], pos_e[i, "theta"],
                             #start.degree = 0, end.degree = 360 - 10,
-                      rou1 = circlize::get.cell.meta.data("cell.top.radius",
-                                                          track.index = 3),
-                      rou2 = circlize::get.cell.meta.data("cell.bottom.radius",
-                                                          track.index = 7),
-                      col = shadow.color, border = NA)
-}
+                            rou1 = circlize::get.cell.meta.data("cell.top.radius",
+                                                                track.index = 3),
+                            rou2 = circlize::get.cell.meta.data("cell.bottom.radius",
+                                                                track.index = 7),
+                            col = shadow.color, border = NA)
+    }
+    if ("indel_table" %in% names(plot_tables)) {
+      pos_s=circlize::circlize(plot_tables$indel_table$start,
+                               1, sector.index = "chr1", track.index = 1)
+      pos_e=circlize::circlize(plot_tables$indel_table$end,
+                               1, sector.index = "chr1", track.index = 1)
+      for (i in 1:nrow(pos_s)) {
+        circlize::draw.sector(pos_s[i, "theta"], pos_e[i, "theta"],
+                              #start.degree = 0, end.degree = 360 - 10,
+                              rou1 = circlize::get.cell.meta.data("cell.top.radius",
+                                                                  track.index = 3),
+                              rou2 = circlize::get.cell.meta.data("cell.bottom.radius",
+                                                                  track.index = 7),
+                              col = "white",# Transparent("#FFFFFF", 0.9),
+                              border = NA)
+      }
+    }
   }
-
   # Add legend
   if (legend){
     legend(x = -1.25, y = -0.6, legend = plot_tables$gene_color$label, cex = 0.6,
@@ -543,7 +530,7 @@ PlotGenome <- function(plot_tables, save = TRUE, file.type = "pdf",
   }
 
   if (save){
-    dev.off()
+    grDevices::dev.off()
   }
 
 }
