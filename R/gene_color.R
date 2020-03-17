@@ -1,22 +1,16 @@
-geneColor <- function(x, y){
+geneColor <- function(psa.color = "#2A6332", psb.color = "#4C8805",
+                      pet.color = "#7F992C", atp.color = "#9FBB3D",
+                      ndh.color = "#FEEE50", rbc.color = "#4D9E3F",
+                      rpo.color = "#AE2D29", rsp.color = "#D6AD7C",
+                      rpl.color = "#9C7A4B", clp_mat_inf.color = "#D9662D",
+                      ycf.color = "#71B8A9", trn.color = "#172C7F",
+                      rrn.color = "#D1382A", other_gene.color = "#7D7D7D"){
   color.table <- data.frame(
     acronym = c("psa","psb","pet","atp","ndh","rbc","rpo","rps","rpl",
                 "clp|mat|inf","ycf","trn","rrn", "OTHER"),
-    col = c(grDevices::rgb(42, 99, 50, maxColorValue = 255), # {psa}
-            grDevices::rgb(76, 136, 5, maxColorValue = 255),# {psb}
-            grDevices::rgb(127, 153, 44, maxColorValue = 255),# {pet}
-            grDevices::rgb(159, 187, 61, maxColorValue = 255),# {atp}
-            grDevices::rgb(254, 238, 80, maxColorValue = 255),# {ndh}
-            grDevices::rgb(77, 158, 63, maxColorValue = 255),# {rbc}
-            grDevices::rgb(174, 45, 41, maxColorValue = 255),# {rpo}
-            grDevices::rgb(214, 173, 124, maxColorValue = 255),# {rps}
-            grDevices::rgb(156, 122, 75, maxColorValue = 255),# {rpl}
-            grDevices::rgb(217, 102, 45, maxColorValue = 255),# {clp, mat, inf}
-            grDevices::rgb(113, 184, 169, maxColorValue = 255),# {ycf}
-            grDevices::rgb(23, 44, 127, maxColorValue = 255),# {trn}
-            grDevices::rgb(209, 56, 42, maxColorValue = 255),# {rrn}
-            grDevices::rgb(125, 125, 125, maxColorValue = 255)# {OTHER}
-          ),
+    col = c(psa.color, psb.color, pet.color , atp.color, ndh.color, rbc.color,
+            rpo.color, rsp.color, rpl.color, clp_mat_inf.color, ycf.color,
+            trn.color,rrn.color, other_gene.color),
     label = c("photosystem I", "photosystem II", "cytochrome b/f complex",
               "ATP synthesis", "NADH dehydrogenase", "RubisCO larg subunit",
               "RNA polymerase", "small ribosomal protein",
