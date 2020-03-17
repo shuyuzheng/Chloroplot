@@ -123,7 +123,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #' of LSC sectors.
 #' @param ir.gc A logical value. If it is \code{TRUE}, the gc content for
 #' IR, LSC, and SSC regions will be plot with deep colors.
-#' @paramgc.per.gene A logical value. If it is \code{TRUE}, the gc content for
+#' @param gc.per.gene A logical value. If it is \code{TRUE}, the gc content for
 #' each gene will be plot on the gene layer with deep colors.
 #' @param pseudo A logical value. If it is \code{TRUE}, the pseudo genes (if
 #' there is some in the species) will be marked with a "*" at the end of the
