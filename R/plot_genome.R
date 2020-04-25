@@ -45,6 +45,9 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
       L<- Biostrings::nchar(genome)
       sp_name <- sp.name(gb@definition)
       gene_table <- geneTableRead(gb, genome)
+      if (length(gene_table) == 0){
+
+      }
     }, error = function(e){
       gb <<- genbankr::parseGenBank(text = fetch.gb(gbfile))
       sp_name <<- sp.name(gb$DEFINITION)
@@ -338,6 +341,29 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
     rotate <- -90
   }
 
+  # Track indexes
+  track_index <- 1:8
+  names(track_index) <- c("gene out 1", "gene out 2", "gene", "gene inner 1",
+                          "gene inner 2", "arrow", "gc count", "ir region")
+
+  if (!is.null(customize.ring1)){
+    track_index[c("arrow", "gc count", "ir region")] <- track_index[c("arrow", "gc count", "ir region")] + 1
+    track_index["customize 1"] <- track_index["gene inner 2"] + 1
+  }
+
+  if (!is.null(customize.ring2)){
+    track_index[c("arrow", "gc count", "ir region")] <- track_index[c("arrow", "gc count", "ir region")] + 1
+    track_index["customize 2"] <- track_index["arrow"] - 1
+  }
+
+  # Track heights
+  if (!is.null(customize.ring1) & !is.null(customize.ring2)){
+    height[2] <- height[2]/2
+    height[3] <- height[3] * 0.7
+  } else if (!is.null(customize.ring1) | !is.null(customize.ring2)) {
+    height[2] <- height[2]/1.5
+  }
+
   circlize::circos.clear()
   circlize::circos.par(start.degree = rotate,
                        gap.after = 0,
@@ -355,6 +381,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                               cex = 0.5 * text.size,
                                                               font = graphics::par("font")))
                                  )
+
   # Background
   circlize::draw.sector(0, 360,
                         rou1 = circlize::get.cell.meta.data("cell.bottom.radius",
@@ -444,7 +471,34 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                               cex = 0.5 * text.size,
                                                               font = graphics::par("font"))))
 
-
+  # customized ring 1
+  if (!is.null(customize.ring1)) {
+    customize.ring1$chr <- rep("chr1", nrow(customize.ring1))
+    circlize::circos.track(factors =as.factor(customize.ring1$chr),
+                           x=customize.ring1$position,
+                           y = customize.ring1$value,
+                           track.height = height[2]/2,
+                           track.margin = c(0, circlize::convert_height(1, "mm")),
+                           bg.border = NA, bg.col = gc.background,
+                           panel.fun = function(x, y) {
+                             circlize::circos.lines(x, y, type = "l", area = TRUE,
+                                                    col = gc.color, lwd = 0.6)
+                             circlize::circos.yaxis("left", labels.cex = 0.4 * text.size)
+                           })
+  }
+  if (!is.null(customize.ring2)) {
+    customize.ring1$chr <- rep("chr1", nrow(customize.ring2))
+    circlize::circos.track(factors =as.factor(customize.ring2$chr),
+                           x=customize.ring2$position,
+                           y = customize.ring2$value,
+                           track.margin = c(0, circlize::convert_height(1, "mm")),
+                           track.height = height[2]/2,
+                           bg.border = NA, bg.col = gc.background,
+                           panel.fun = function(x, y) {
+                             circlize::circos.lines(x, y, type = "s",
+                                                    col = gc.color, lwd = 0.6)
+                           })
+  }
   # 6. Arrow outside gnome axis
   circlize::circos.track(ylim = c(0, 1), track.height = 0.05, bg.border = NA,
                          track.margin = c(0, circlize::convert_height(1, "mm")),
@@ -456,9 +510,11 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                   col = MildColor(background),
                                                   border = NA,
                                                   arrow.head.length = circlize::convert_x(3, "mm"),
-                                                  width = circlize::convert_y(1, "mm"))
+                                                  width = circlize::convert_y(0.5, "mm"))
                            # circlize::circos.genomicAxis(h = "bottom")
                          })
+
+
 
   # 7. GC content
   circlize::circos.track(factors =as.factor(plot.tables$gc_count$chr),
@@ -477,7 +533,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                   col=MildColor(gc.color),
                                                   border=NA,
                                                   arrow.head.length=circlize::convert_x(3, "mm"),
-                                                  width=circlize::convert_y(1, "mm"))
+                                                  width=circlize::convert_y(0.5, "mm"))
                            circlize::circos.segments(x0=0, x1=L, y0=0.25,
                                                      y1=0.25, lwd=0.5,
                                                      lty="16", col=MildColor(gc.background))
@@ -552,7 +608,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
   # Specie's information inthe central
   circlize::draw.sector(0, 360,
                         rou1 = circlize::get.cell.meta.data("cell.bottom.radius",
-                                                            track.index = 8),
+                                                            track.index = track_index['ir region']),
                         rou2 = 0,
                         col = info.background, border = NA)
 
@@ -587,9 +643,9 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
       circlize::draw.sector(pos_s[i, "theta"], pos_e[i, "theta"],
                             #start.degree = 0, end.degree = 360 - 10,
                             rou1 = circlize::get.cell.meta.data("cell.top.radius",
-                                                                track.index = 3),
+                                                                track.index = track_index['gene']),
                             rou2 = circlize::get.cell.meta.data("cell.bottom.radius",
-                                                                track.index = 7),
+                                                                track.index = track_index['gc count']),
                             col = shadow.color, border = NA)
     }
     if ("indel_table" %in% names(plot.tables)) {
