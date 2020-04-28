@@ -178,9 +178,31 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #' ribosomal RNA
 #' @param other_gene.color An R color object. It indecates the color for other
 #' genes
-#' @param customize.ring1 coming soon
-#' @param customize.ring2 coming soon
+#' @param customize.ring1 A data frame. It must contain 2 columns:
+#' \itemize{
+#'   \item \strong{position}: 1-base genomic coordinate for the features.
+#'   \item \strong{value}: the values for the features.
+#' }
 #'
+#' @param customize.ring1.type A charactor. It indicate the plot type in
+#' customize.ring1. Avaliable values are "line", "line + filling", "line + dot",
+#' "line + dot + filling", "step line", "step line + filling", "vertical line"
+#' @param customize.ring2 A data frame. It must contain 2 columns:
+#' \itemize{
+#'   \item \strong{position}: 1-base genomic coordinate for the features.
+#'   \item \strong{value}: the values for the features.
+#' }
+#' @param customize.ring2.type A charactor. It indicate the plot type in
+#' customize.ring2. Avaliable values are "line", "line + filling", "line + dot",
+#' "line + dot + filling", "step line", "step line + filling", "vertical line"
+#' @param customize.ring3 A data frame. It must contain 2 columns:
+#' \itemize{
+#'   \item \strong{start}: 1-base genomic coordinate for the start point of the
+#'   features.
+#'   \item \strong{end}: 1-base genomic coordinate for the end point of the
+#'   features.
+#'   \item \strong{value}: the values for the features.
+#' }
 #' @return  A plot for chloroplast genome.
 #'
 #' @references Supek, Fran, and Kristian Vlahovicek. “Comparison of codon usage
@@ -211,7 +233,9 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                        rrn.color = "#D1382A", other_gene.color = "#7D7D7D",
                        cu.bias = TRUE, customize.ring1 = NULL,
                        customize.ring1.type = "line",
-                       customize.ring2 = NULL){
+                       customize.ring2 = NULL,
+                       customize.ring2.type = "line",
+                       customize.ring3 = NULL){
 
   L <- plot.tables$genome_len
   # 1. Modify gene table
@@ -241,11 +265,14 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
       gc_count$chr <- rep("chr1", nrow(gc_count))
       gc_count <- select(gc_count, chr, position, gc_count)
 
-      if (!is.null(customize.ring2)){
-        customize.ring2 <- SSCrev(customize.ring2, SSCs = SSCs, SSCe = SSCe, L)
+      if (!is.null(customize.ring3)){
+        customize.ring3 <- SSCrev(customize.ring3, SSCs = SSCs, SSCe = SSCe, L)
       }
       if (!is.null(customize.ring1)){
         customize.ring1$position <- SSCrev_point(customize.ring1$position)
+      }
+      if (!is.null(customize.ring2)){
+        customize.ring2$position <- SSCrev_point(customize.ring2$position)
       }
       }
   } else {
@@ -373,12 +400,22 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
     track_index["customize 2"] <- track_index["arrow"] - 1
   }
 
+  if (!is.null(customize.ring3)){
+    track_index[c("arrow", "gc count", "ir region")] <- track_index[c("arrow", "gc count", "ir region")] + 1
+    track_index["customize 3"] <- track_index["arrow"] - 1
+  }
+
   # Track heights
-  if (!is.null(customize.ring1) & !is.null(customize.ring2)){
+  n_customize_ring <- sum(c(!is.null(customize.ring1), !is.null(customize.ring2), !is.null(customize.ring3)))
+  if (n_customize_ring == 2){
     height[2] <- height[2]/2
     height[3] <- height[3] * 0.7
-  } else if (!is.null(customize.ring1) | !is.null(customize.ring2)) {
+  } else if (n_customize_ring == 2) {
     height[2] <- height[2]/1.5
+  } else if (n_customize_ring == 3) {
+    height[2] <- height[2]/2
+    height[3] <- height[3] * 0.7
+    height[1] <- height[1] *0.7
   }
 
 
@@ -532,25 +569,71 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                            })
 
   }
+
+  # customized ring 2
   if (!is.null(customize.ring2)) {
+    customize.ring2 <- customize.ring2[order(customize.ring2$position), ]
     customize.ring2$chr <- rep("chr1", nrow(customize.ring2))
     ylim <- c(min(customize.ring2$value), max(customize.ring2$value))
+    bar_color <- ifelse(customize.ring2$value > 0, "orangered3", "steelblue")
     if (min(customize.ring2$value) > 0) {
       ylim[1] <- 0
+      bar_color <- rep(gc.color, nrow(customize.ring2))
     }
     if (max(customize.ring2$value) < 0){
       ylim[2] <- 0
+      bar_color <- rep(gc.color, nrow(customize.ring2))
     }
+    style <- switch(customize.ring2.type,
+                    "line" = list(type = "l", arear = FALSE, col = gc.color, lwd = 0.5),
+                    "line + filling" = list(type = "l", arear = TRUE, col = gc.color, lwd = 0.01),
+                    "line + dot" = list(type = "o", arear = FALSE, col = bar_color, lwd = 0.5),
+                    "line + dot + filling" = list(type = "o", arear = TRUE, col = bar_color, lwd = 0.01),
+                    "step line" = list(type = "s", arear = FALSE, col = gc.color, lwd = 0.5),
+                    "step line + filling" = list(type = "s", arear = TRUE, col = gc.color, lwd = 0.01),
+                    "vertical line" = list(type = "h", arear = FALSE, col = bar_color, lwd = 0.5))
+
     circlize::circos.track(factors =as.factor(customize.ring2$chr),
+                           x = customize.ring2$position,
+                           y = customize.ring2$value, ylim = ylim,
+                           track.height = height[2]/2,
+                           track.margin = c(0, circlize::convert_height(1, "mm")),
+                           bg.border = NA, bg.col = gc.background,
+                           panel.fun = function(x, y) {
+                             circlize::circos.lines(x, y, type = style$type,
+                                                    area = style$area,
+                                                    baseline = 0, pt.col = bar_color,
+                                                    cex = 0.2 * text.size,
+                                                    col = style$col,
+                                                    lwd = style$lwd)
+                             circlize::circos.segments(x0=0, x1=L, y0=0,
+                                                       y1=0, lwd=0.5,
+                                                       lty="16",
+                                                       col=darken(gc.color, 0.7))
+                           })
+
+  }
+
+  # customize.ring 3
+  if (!is.null(customize.ring3)) {
+    customize.ring3$chr <- rep("chr1", nrow(customize.ring3))
+    ylim <- c(min(customize.ring3$value), max(customize.ring3$value))
+    if (min(customize.ring3$value) > 0) {
+      ylim[1] <- 0
+    }
+    if (max(customize.ring3$value) < 0){
+      ylim[2] <- 0
+    }
+    circlize::circos.track(factors =as.factor(customize.ring3$chr),
                            track.margin = c(0, circlize::convert_height(1, "mm")),
                            track.height = height[2]/2,
                            ylim = ylim,
                            bg.border = NA, bg.col = gc.background,
                            panel.fun = function(x, y) {
-                             if (min(customize.ring2$value) < 0 &
-                                 max(customize.ring2$value) > 0) {
-                               df_large <- customize.ring2[which(customize.ring2$value > 0), ]
-                               df_less <- customize.ring2[which(customize.ring2$value < 0), ]
+                             if (min(customize.ring3$value) < 0 &
+                                 max(customize.ring3$value) > 0) {
+                               df_large <- customize.ring3[which(customize.ring3$value > 0), ]
+                               df_less <- customize.ring3[which(customize.ring3$value < 0), ]
                                circlize::circos.rect(xleft = df_large$start,
                                                      xright = df_large$end,
                                                      ybottom = 0,
@@ -563,18 +646,18 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                      ytop = 0,
                                                      col = "steelblue",
                                                      border = NA)
-                             } else if (min(customize.ring2$value) < 0) {
-                               circlize::circos.rect(xleft = customize.ring2$start,
-                                           xright = customize.ring2$end,
-                                           ybottom = customize.ring2$value,
+                             } else if (min(customize.ring3$value) < 0) {
+                               circlize::circos.rect(xleft = customize.ring3$start,
+                                           xright = customize.ring3$end,
+                                           ybottom = customize.ring3$value,
                                            ytop = 0,
                                            col = gc.color,
                                            border = NA)
                              } else {
-                               circlize::circos.rect(xleft = customize.ring2$start,
-                                                    xright = customize.ring2$end,
+                               circlize::circos.rect(xleft = customize.ring3$start,
+                                                    xright = customize.ring3$end,
                                                     ybottom = 0,
-                                                    ytop = customize.ring2$value,
+                                                    ytop = customize.ring3$value,
                                                     col = gc.color,
                                                     border = NA)
                             }
