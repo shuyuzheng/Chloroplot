@@ -1,4 +1,3 @@
-
 SSCrev<- function(gene_table, SSCs, SSCe, l){
   res <- gene_table
   for (i in 1:nrow(gene_table)) {
@@ -28,4 +27,15 @@ SSCrev<- function(gene_table, SSCs, SSCe, l){
 
   }
   return(res)
+}
+
+SSCrev_point <- function(position, SSCs, SSCe){
+    if (SSCs < SSCe){
+      position[which(position >= SSCs & position <= SSCe)] <- SSCs + SSCe -
+        position[which(position >= SSCs & position <= SSCe)]
+    } else {
+      position[which(position >= SSCs | position <= SSCe)] <- SSCs + SSCe -
+        position[which(position >= SSCs | position <= SSCe)]
+    }
+  return(position)
 }

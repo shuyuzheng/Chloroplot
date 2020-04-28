@@ -210,6 +210,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                        ycf.color = "#71B8A9", trn.color = "#172C7F",
                        rrn.color = "#D1382A", other_gene.color = "#7D7D7D",
                        cu.bias = TRUE, customize.ring1 = NULL,
+                       customize.ring1.type = "line",
                        customize.ring2 = NULL){
 
   L <- plot.tables$genome_len
@@ -225,11 +226,27 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
       if (sum(plot.tables$ir_table$name == "SSC") == 2){
         SSCs <- plot.tables$ir_table$start[plot.tables$ir_table$name == "SSC"][2]
         SSCe <- plot.tables$ir_table$end[plot.tables$ir_table$name == "SSC"][1]
+        genome_ssc_convert <- c(plot.table$genome[L:SSCs], plot.table$genome[SSCe:SSCs],
+                                plot.tables$genome[SSCe:1])
       } else {
         SSCs <- plot.tables$ir_table$start[plot.tables$ir_table$name == "SSC"]
         SSCe <- plot.tables$ir_table$end[plot.tables$ir_table$name == "SSC"]
+        genome_ssc_convert <- c(plot.table$genome[1:SSCs], plot.table$genome[SSCe:SSCs],
+                                plot.tables$genome[SSCe:L])
       }
       gene_table <- SSCrev(plot.tables$gene_table, SSCs = SSCs, SSCe = SSCe, L)
+      gc_count_list <- gc_count(genome_ssc_convert, view.width = gc.window)
+      gc_count <- gc_count_list[[1]]
+      gc_total <- gc_count_list[[2]]
+      gc_count$chr <- rep("chr1", nrow(gc_count))
+      gc_count <- select(gc_count, chr, position, gc_count)
+
+      if (!is.null(customize.ring2)){
+        customize.ring2 <- SSCrev(customize.ring2, SSCs = SSCs, SSCe = SSCe, L)
+      }
+      if (!is.null(customize.ring1)){
+        customize.ring1$position <- SSCrev_point(customize.ring1$position)
+      }
       }
   } else {
     gene_table <- plot.tables$gene_table
@@ -364,6 +381,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
     height[2] <- height[2]/1.5
   }
 
+
   circlize::circos.clear()
   circlize::circos.par(start.degree = rotate,
                        gap.after = 0,
@@ -473,44 +491,107 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 
   # customized ring 1
   if (!is.null(customize.ring1)) {
+    customize.ring1 <- customize.ring1[order(customize.ring1$position), ]
     customize.ring1$chr <- rep("chr1", nrow(customize.ring1))
+    ylim <- c(min(customize.ring1$value), max(customize.ring1$value))
+    bar_color <- ifelse(customize.ring1$value > 0, "orangered3", "steelblue")
+    if (min(customize.ring1$value) > 0) {
+      ylim[1] <- 0
+      bar_color <- rep(gc.color, nrow(customize.ring1))
+    }
+    if (max(customize.ring1$value) < 0){
+      ylim[2] <- 0
+      bar_color <- rep(gc.color, nrow(customize.ring1))
+    }
+    style <- switch(customize.ring1.type,
+           "line" = list(type = "l", arear = FALSE, col = gc.color, lwd = 0.5),
+           "line + filling" = list(type = "l", arear = TRUE, col = gc.color, lwd = 0.01),
+           "line + dot" = list(type = "o", arear = FALSE, col = bar_color, lwd = 0.5),
+           "line + dot + filling" = list(type = "o", arear = TRUE, col = bar_color, lwd = 0.01),
+           "step line" = list(type = "s", arear = FALSE, col = gc.color, lwd = 0.5),
+           "step line + filling" = list(type = "s", arear = TRUE, col = gc.color, lwd = 0.01),
+           "vertical line" = list(type = "h", arear = FALSE, col = bar_color, lwd = 0.5))
+
     circlize::circos.track(factors =as.factor(customize.ring1$chr),
-                           x=customize.ring1$position,
-                           y = customize.ring1$value,
+                           x = customize.ring1$position,
+                           y = customize.ring1$value, ylim = ylim,
                            track.height = height[2]/2,
                            track.margin = c(0, circlize::convert_height(1, "mm")),
                            bg.border = NA, bg.col = gc.background,
                            panel.fun = function(x, y) {
-                             circlize::circos.lines(x, y, type = "l", area = TRUE,
-                                                    col = gc.color, lwd = 0.6)
-                             circlize::circos.yaxis("left", labels.cex = 0.4 * text.size)
+                             circlize::circos.lines(x, y, type = style$type,
+                                                    area = style$area,
+                                                    baseline = 0, pt.col = bar_color,
+                                                    cex = 0.2 * text.size,
+                                                    col = style$col,
+                                                    lwd = style$lwd)
+                             circlize::circos.segments(x0=0, x1=L, y0=0,
+                                                       y1=0, lwd=0.5,
+                                                       lty="16",
+                                                       col=darken(gc.color, 0.7))
                            })
+
   }
   if (!is.null(customize.ring2)) {
-    customize.ring1$chr <- rep("chr1", nrow(customize.ring2))
+    customize.ring2$chr <- rep("chr1", nrow(customize.ring2))
+    ylim <- c(min(customize.ring2$value), max(customize.ring2$value))
+    if (min(customize.ring2$value) > 0) {
+      ylim[1] <- 0
+    }
+    if (max(customize.ring2$value) < 0){
+      ylim[2] <- 0
+    }
     circlize::circos.track(factors =as.factor(customize.ring2$chr),
-                           x=customize.ring2$position,
-                           y = customize.ring2$value,
                            track.margin = c(0, circlize::convert_height(1, "mm")),
                            track.height = height[2]/2,
+                           ylim = ylim,
                            bg.border = NA, bg.col = gc.background,
                            panel.fun = function(x, y) {
-                             circlize::circos.lines(x, y, type = "s",
-                                                    col = gc.color, lwd = 0.6)
+                             if (min(customize.ring2$value) < 0 &
+                                 max(customize.ring2$value) > 0) {
+                               df_large <- customize.ring2[which(customize.ring2$value > 0), ]
+                               df_less <- customize.ring2[which(customize.ring2$value < 0), ]
+                               circlize::circos.rect(xleft = df_large$start,
+                                                     xright = df_large$end,
+                                                     ybottom = 0,
+                                                     ytop = df_large$value,
+                                                     col = "orangered3",
+                                                     border = NA)
+                               circlize::circos.rect(xleft = df_less$start,
+                                                     xright = df_less$end,
+                                                     ybottom = df_less$value,
+                                                     ytop = 0,
+                                                     col = "steelblue",
+                                                     border = NA)
+                             } else if (min(customize.ring2$value) < 0) {
+                               circlize::circos.rect(xleft = customize.ring2$start,
+                                           xright = customize.ring2$end,
+                                           ybottom = customize.ring2$value,
+                                           ytop = 0,
+                                           col = gc.color,
+                                           border = NA)
+                             } else {
+                               circlize::circos.rect(xleft = customize.ring2$start,
+                                                    xright = customize.ring2$end,
+                                                    ybottom = 0,
+                                                    ytop = customize.ring2$value,
+                                                    col = gc.color,
+                                                    border = NA)
+                            }
                            })
   }
   # 6. Arrow outside gnome axis
-  circlize::circos.track(ylim = c(0, 1), track.height = 0.05, bg.border = NA,
+  circlize::circos.track(ylim = c(0, 1), track.height = 0.06, bg.border = NA,
                          track.margin = c(0, circlize::convert_height(1, "mm")),
                          panel.fun = function(x, y) {
                            circlize::circos.arrow(x1 = L - L %/% 40,
                                                   x2 = L,
-                                                  y = 1,
+                                                  y = 0.85,
                                                   arrow.position="start",
                                                   col = MildColor(background),
                                                   border = NA,
                                                   arrow.head.length = circlize::convert_x(3, "mm"),
-                                                  width = circlize::convert_y(0.5, "mm"))
+                                                  width = 0.15)
                            # circlize::circos.genomicAxis(h = "bottom")
                          })
 
@@ -524,16 +605,16 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                          track.height = height[2],
                          bg.border = NA, bg.col = gc.background,
                          panel.fun = function(x, y) {
-                           circlize::circos.lines(x, y, type = "h",
+                           circlize::circos.lines(x, y, type = "s", area = TRUE,
                                                   baseline = "top",
-                                                  col = gc.color, lwd = 0.6)
+                                                  col = gc.color, lwd = 0.0001)
                            circlize::circos.arrow(x1= 0,
                                                   x2= L %/% 35,
                                                   y= 0.9,
                                                   col=MildColor(gc.color),
                                                   border=NA,
                                                   arrow.head.length=circlize::convert_x(3, "mm"),
-                                                  width=circlize::convert_y(0.5, "mm"))
+                                                  width=0.15 * 0.05 / height[2])
                            circlize::circos.segments(x0=0, x1=L, y0=0.25,
                                                      y1=0.25, lwd=0.5,
                                                      lty="16", col=MildColor(gc.background))
