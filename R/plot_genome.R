@@ -57,7 +57,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 
 
   # 1. IR LSC SSC -----------------------------------------------------------
-  ir <- irDetect_indel(genome)
+  ir <- irDetect(genome)
 
   # 2. Gene table -----------------------------------------------------------
 
@@ -845,27 +845,22 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                           border = NA)
                                   }
                                   if ("indel_table" %in% names(plot.tables)){
-                                    circlize::circos.rect(xleft = plot.tables$indel_table$start,
+                                    circlize::circos.rect(xleft = plot.tables$indel_table$position - 10,
                                                           ybottom = 0,#circlize::convert_y(0, "mm"),
-                                                          xright = plot.tables$indel_table$end,
+                                                          xright = plot.tables$indel_table$position + 10,
                                                           ytop = 1,#circlize::convert_y(3, "mm"),
                                                           col = plot.tables$indel_table$bg_col,
                                                           border = NA)
-                                    circlize::circos.points(x = plot.tables$indel_table$center[which(plot.tables$indel_table$name == "insert")],
-                                                            y = 0,
-                                                            col = "green",
-                                                            pch = 20,
+                                    circlize::circos.points(x = plot.tables$indel_table$position,
+                                                            y = 0.05,
+                                                            col = plot.tables$indel_table$col,
+                                                            pch = 19,
                                                             cex = 0.2 * text.size)
-                                    circlize::circos.points(x = plot.tables$indel_table$center[which(plot.tables$indel_table$name == "delet")],
-                                                            y = 0,
-                                                            col = "yellow",
-                                                            pch = 20,
-                                                            cex = 0.2 * text.size)
-                                    circlize::circos.points(x = plot.tables$indel_table$center[which(plot.tables$indel_table$name == "replace")],
-                                                            y = 0,
-                                                            col = "red",
-                                                            pch = 20,
-                                                            cex = 0.2 * text.size)
+                                    # circlize::circos.text(x = plot.tables$indel_table$position,
+                                    #                         y = 0.5,
+                                    #                         col = plot.tables$indel_table$col,
+                                    #                         labels = plot.tables$indel_table$string,
+                                    #                         cex = 0.2 * text.size)
                                   }
 
                                   circlize::circos.text(x = plot.tables$ir_table$center,
@@ -931,9 +926,9 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 
     }
     if ("indel_table" %in% names(plot.tables)) {
-      pos_s=circlize::circlize(plot.tables$indel_table$start,
+      pos_s=circlize::circlize(plot.tables$indel_table$position - 10,
                                1, sector.index = "chr1", track.index = 1)
-      pos_e=circlize::circlize(plot.tables$indel_table$end,
+      pos_e=circlize::circlize(plot.tables$indel_table$position + 10,
                                1, sector.index = "chr1", track.index = 1)
       for (i in 1:nrow(pos_s)) {
         if ('gene' %in% names(track_index)){
