@@ -23,7 +23,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
     tryCatch({
       gb <- genbankr::readGenBank(gbfile)
       genome <- genbankr::getSeq(gb)
-      genome <- rdnFixer(genome)
+      #genome <- rdnFixer(genome)
       L<- Biostrings::nchar(genome)
       sp_name <- sp.name(gb@definition)
       gene_table <- geneTableRead(gb, genome)
@@ -31,7 +31,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
       gb <<- genbankr::parseGenBank(gbfile)
       sp_name <<- sp.name(gb$DEFINITION)
       genome <<- gb$ORIGIN[[1]]
-      genome <<- rdnFixer(genome)
+      #genome <<- rdnFixer(genome)
       L <<- Biostrings::nchar(genome)
       gene_table <<- geneTableParsed(gb, genome)
 
@@ -41,7 +41,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
     tryCatch({
       gb <- genbankr::readGenBank(text = fetch.gb(gbfile))
       genome <- genbankr::getSeq(gb)
-      genome <- rdnFixer(genome)
+      #genome <- rdnFixer(genome)
       L<- Biostrings::nchar(genome)
       sp_name <- sp.name(gb@definition)
       gene_table <- geneTableRead(gb, genome)
@@ -49,7 +49,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
       gb <<- genbankr::parseGenBank(text = fetch.gb(gbfile))
       sp_name <<- sp.name(gb$DEFINITION)
       genome <<- gb$ORIGIN[[1]]
-      genome <<- rdnFixer(genome)
+      #genome <<- rdnFixer(genome)
       L <<- Biostrings::nchar(genome)
       gene_table <<- geneTableParsed(gb, genome)
     })
@@ -218,9 +218,10 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                        text.size = 1, height = c(0.1, 0.2, 0.07),
                        file.name = NULL, shadow = TRUE, ir.gc = TRUE,
                        gc.per.gene = TRUE, pseudo = TRUE, legend = TRUE,
-                       ssc.converse = FALSE, genome.length = TRUE,
-                       total.gc = TRUE, gene.no = TRUE, rrn.no = TRUE,
-                       trn.no = TRUE,
+                       ssc.converse = FALSE, lsc.converse = FALSE,
+                       IRA.converse = FALSE, IRB.converse = FALSE,
+                       genome.length = TRUE, total.gc = TRUE,
+                       gene.no = TRUE, rrn.no = TRUE,trn.no = TRUE,
                        background = "grey90",gc.color = "grey30",
                        gc.background = "grey70", info.background = "black",
                        ir.color = "#2F3941", ssc.color = "#82B6E2",
@@ -245,45 +246,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
   }
   # ssc covert
   if (ssc.converse){
-    if (nrow(plot.tables$ir_table) == 1){
-      warning("Didn't get IR region from '", plot.tables$sp_name,
-              "genome'.It's impossible to convert SSC region.")
-      gene_table <- plot.tables$gene_table
-    } else {
-      if (sum(plot.tables$ir_table$name == "SSC") == 2){
-        SSCs <- plot.tables$ir_table$start[plot.tables$ir_table$name == "SSC"][2]
-        SSCe <- plot.tables$ir_table$end[plot.tables$ir_table$name == "SSC"][1]
-        genome_ssc_convert <- c(plot.tables$genome[L:SSCs], plot.tables$genome[SSCe:SSCs],
-                                plot.tables$genome[SSCe:1])
-      } else {
-        SSCs <- plot.tables$ir_table$start[plot.tables$ir_table$name == "SSC"]
-        SSCe <- plot.tables$ir_table$end[plot.tables$ir_table$name == "SSC"]
-        genome_ssc_convert <- c(plot.tables$genome[1:SSCs], plot.tables$genome[SSCe:SSCs],
-                                plot.tables$genome[SSCe:L])
-      }
-      gene_table <- SSCrev(plot.tables$gene_table, SSCs = SSCs, SSCe = SSCe, L)
-      gc.window <- 100
-      if (L > 500000){
-        gc.window <- 200
-      } else if (L < 100000){
-        gc.window <- 50
-      }
-      gc_count_list <- gc_count(genome_ssc_convert, view.width = gc.window)
-      gc_count <- gc_count_list[[1]]
-      gc_total <- gc_count_list[[2]]
-      gc_count$chr <- rep("chr1", nrow(gc_count))
-      gc_count <- select(gc_count, chr, position, gc_count)
 
-      if (!is.null(customize.ring3)){
-        customize.ring3 <- SSCrev(customize.ring3, SSCs = SSCs, SSCe = SSCe, L)
-      }
-      if (!is.null(customize.ring1)){
-        customize.ring1$position <- SSCrev_point(customize.ring1$position)
-      }
-      if (!is.null(customize.ring2)){
-        customize.ring2$position <- SSCrev_point(customize.ring2$position)
-      }
-      }
   } else {
     gene_table <- plot.tables$gene_table
   }
