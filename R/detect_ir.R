@@ -148,11 +148,9 @@ irDetect <- function(genome, seed.size = 1000) {
     ir_table$text <- sub("tmp", "SSC", ir_table$text, fixed = TRUE)
   }
 
-  if (is.null(indel_table)){
-    return(ir_table)
-  } else {
-    return(list(ir_table = ir_table, indel_table = indel_table))
-  }
+
+  return(list(ir_table = ir_table, indel_table = indel_table))
+
 }
 
 map_genome <- function(genome, seed_starts, seed.size = 1000,

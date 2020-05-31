@@ -24,7 +24,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
       gb <- genbankr::readGenBank(gbfile)
       genome <- genbankr::getSeq(gb)
       #genome <- rdnFixer(genome)
-      L<- Biostrings::nchar(genome)
+      l<- Biostrings::nchar(genome)
       sp_name <- sp.name(gb@definition)
       gene_table <- geneTableRead(gb, genome)
     }, error = function(e){
@@ -32,7 +32,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
       sp_name <<- sp.name(gb$DEFINITION)
       genome <<- gb$ORIGIN[[1]]
       #genome <<- rdnFixer(genome)
-      L <<- Biostrings::nchar(genome)
+      l <<- Biostrings::nchar(genome)
       gene_table <<- geneTableParsed(gb, genome)
 
     })
@@ -42,7 +42,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
       gb <- genbankr::readGenBank(text = fetch.gb(gbfile))
       genome <- genbankr::getSeq(gb)
       #genome <- rdnFixer(genome)
-      L<- Biostrings::nchar(genome)
+      l<- Biostrings::nchar(genome)
       sp_name <- sp.name(gb@definition)
       gene_table <- geneTableRead(gb, genome)
     }, error = function(e){
@@ -50,7 +50,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
       sp_name <<- sp.name(gb$DEFINITION)
       genome <<- gb$ORIGIN[[1]]
       #genome <<- rdnFixer(genome)
-      L <<- Biostrings::nchar(genome)
+      l <<- Biostrings::nchar(genome)
       gene_table <<- geneTableParsed(gb, genome)
     })
   }
@@ -63,9 +63,9 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 
 
   # 4. GC count -------------------------------------------------------------
-  if (L > 500000){
+  if (l > 500000){
     gc.window <- 200
-  } else if (L < 100000){
+  } else if (l < 100000){
     gc.window <- 50
   }
   gc_count_list <- gc_count(genome, view.width = gc.window)
@@ -74,16 +74,12 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
   gc_count$chr <- rep("chr1", nrow(gc_count))
   gc_count <- select(gc_count, chr, position, gc_count)
 
-  if (length(ir) == 2){
-    tables <- list(ir_table = ir$ir_table, indel_table = ir$indel_table,
-                   gc_count = gc_count, gc_total = gc_total,
-                   sp_name = sp_name, genome_len = L, gene_table = gene_table,
-                   genome = genome)
-  } else {
-    tables <- list(ir_table = ir, gc_count = gc_count, gc_total = gc_total,
-                   sp_name = sp_name, genome_len = L, gene_table = gene_table,
-                   genome = genome)
-  }
+
+  tables <- list(ir_table = ir$ir_table, indel_table = ir$indel_table,
+                 gc_count = gc_count, gc_total = gc_total,
+                 sp_name = sp_name, genome_len = l, gene_table = gene_table,
+                 genome = genome)
+
 
   return(tables)
 }
@@ -219,7 +215,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                        file.name = NULL, shadow = TRUE, ir.gc = TRUE,
                        gc.per.gene = TRUE, pseudo = TRUE, legend = TRUE,
                        ssc.converse = FALSE, lsc.converse = FALSE,
-                       IRA.converse = FALSE, IRB.converse = FALSE,
+                       ira.converse = FALSE, irb.converse = FALSE,
                        genome.length = TRUE, total.gc = TRUE,
                        gene.no = TRUE, rrn.no = TRUE,trn.no = TRUE,
                        background = "grey90",gc.color = "grey30",
@@ -239,17 +235,111 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                        customize.ring2.type = "line",
                        customize.ring3 = NULL){
 
-  L <- plot.tables$genome_len
+  # Unpack plot.table
+  genome <- plot.tables$genome
+  ir_table <- plot.tables$ir_table
+  gc_count <- plot.tables$gc_count
+  gc_total <- plot.tables$gc_total
+  sp_name <- plot.tables$sp_name
+  gene_table <- plot.tables$gene_table
+  genome <- plot.tables$genome
+  indel_table <- plot.tables$indel_table
+
+  l <- Biostrings::nchar(genome)
+
   # 1. Modify gene table
-  if (nrow(plot.tables$ir_table) == 1){
-    plot.tables$ir_table$text <- gsub("LSC", "Genome", plot.tables$ir_table$text[1])
+  if (nrow(ir_table) == 1){
+    ir_table$text <- gsub("LSC", "Genome", ir_table$text[1])
   }
+
   # ssc covert
   if (ssc.converse){
-
-  } else {
-    gene_table <- plot.tables$gene_table
+    if (nrow(ir_table) == 1){
+      warning("Didn't get IR region from thid species. ",
+              "It's impossible to convert SSC region.")
+      gene_table <- gene_table
+    } else{
+      tmp <- convert_region(ir_table = ir_table, l = l, region = "SSC",
+                            genome = genome, gene_table = gene_table,
+                            customize.ring1 = customize.ring1,
+                            customize.ring2 = customize.ring2,
+                            customize.ring3 = customize.ring3)
+      gene_table <- tmp$gene_table
+      gc_count <- tmp$gc_count
+      gc_total <- tmp$gc_total
+      customize.ring1 <- tmp$customize.ring1
+      customize.ring2 <- tmp$customize.ring2
+      customize.ring3 <- tmp$customize.ring3
+    }
   }
+
+  # LSC covert
+  if (lsc.converse){
+    if (nrow(ir_table) == 1){
+      warning("Didn't get IR region from thid species. ",
+              "It's impossible to convert LSC region.")
+      gene_table <- gene_table
+    } else{
+      tmp <- convert_region(ir_table = ir_table, l = l, region = "LSC",
+                            genome = genome, gene_table = gene_table,
+                            customize.ring1 = customize.ring1,
+                            customize.ring2 = customize.ring2,
+                            customize.ring3 = customize.ring3)
+      gene_table <- tmp$gene_table
+      gc_count <- tmp$gc_count
+      gc_total <- tmp$gc_total
+      customize.ring1 <- tmp$customize.ring1
+      customize.ring2 <- tmp$customize.ring2
+      customize.ring3 <- tmp$customize.ring3
+    }
+  }
+
+  # IRA covert
+  if (ira.converse){
+    if (nrow(ir_table) == 1){
+      warning("Didn't get IR region from thid species. ",
+              "It's impossible to convert IRA region.")
+      gene_table <- gene_table
+    } else{
+      tmp <- convert_region(ir_table = ir_table, l = l, region = "IRA",
+                            genome = genome, gene_table = gene_table,
+                            customize.ring1 = customize.ring1,
+                            customize.ring2 = customize.ring2,
+                            customize.ring3 = customize.ring3,
+                            indel_table = indel_table)
+      gene_table <- tmp$gene_table
+      gc_count <- tmp$gc_count
+      gc_total <- tmp$gc_total
+      customize.ring1 <- tmp$customize.ring1
+      customize.ring2 <- tmp$customize.ring2
+      customize.ring3 <- tmp$customize.ring3
+      indel_table <- tmp$indel_table
+    }
+  }
+
+  # IRB covert
+  if (irb.converse){
+    if (nrow(ir_table) == 1){
+      warning("Didn't get IR region from thid species. ",
+              "It's impossible to convert IRB region.")
+      gene_table <- gene_table
+    } else{
+      tmp <- convert_region(ir_table = ir_table, l = l, region = "IRB",
+                            genome = genome, gene_table = gene_table,
+                            customize.ring1 = customize.ring1,
+                            customize.ring2 = customize.ring2,
+                            customize.ring3 = customize.ring3,
+                            indel_table = indel_table)
+      gene_table <- tmp$gene_table
+      gc_count <- tmp$gc_count
+      gc_total <- tmp$gc_total
+      customize.ring1 <- tmp$customize.ring1
+      customize.ring2 <- tmp$customize.ring2
+      customize.ring3 <- tmp$customize.ring3
+      indel_table <- tmp$indel_table
+    }
+  }
+
   # colouring
   color_table <- geneColor(psa.color = psa.color, psb.color = psb.color,
                            pet.color = pet.color, atp.color = atp.color,
@@ -290,7 +380,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                      }
                                    })
   }
-  genome <- plot.tables$genome
+  genome <- genome
   gene_table_r <- filter(gene_table, strand == "-") %>%
     select(chr, start, end, gene, col, gc_count, gene_label) %>%
     arrange(start)
@@ -299,28 +389,28 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
     arrange(start)
 
   # 2. Set colors
-  plot.tables$ir_table$bg_col <- rep(NA, nrow(plot.tables$ir_table))
-  plot.tables$ir_table$bg_col[plot.tables$ir_table$name == "LSC"] <- lsc.color
-  plot.tables$ir_table$bg_col[plot.tables$ir_table$name == "SSC"] <- ssc.color
-  plot.tables$ir_table$bg_col[grepl("IR", plot.tables$ir_table$name)] <- ir.color
+  ir_table$bg_col <- rep(NA, nrow(ir_table))
+  ir_table$bg_col[ir_table$name == "LSC"] <- lsc.color
+  ir_table$bg_col[ir_table$name == "SSC"] <- ssc.color
+  ir_table$bg_col[grepl("IR", ir_table$name)] <- ir.color
 
 
   # Automatically adjust colors
   info.color <- CompColor(info.background)
 
-  plot.tables$ir_table$inf_col <- rep(NA, nrow(plot.tables$ir_table))
-  plot.tables$ir_table$inf_col[plot.tables$ir_table$name=="LSC"] <- CompColor(lsc.color)
-  plot.tables$ir_table$inf_col[plot.tables$ir_table$name=="SSC"] <- CompColor(ssc.color)
-  plot.tables$ir_table$inf_col[grepl("IR", plot.tables$ir_table$name)] <- CompColor(ir.color)
+  ir_table$inf_col <- rep(NA, nrow(ir_table))
+  ir_table$inf_col[ir_table$name=="LSC"] <- CompColor(lsc.color)
+  ir_table$inf_col[ir_table$name=="SSC"] <- CompColor(ssc.color)
+  ir_table$inf_col[grepl("IR", ir_table$name)] <- CompColor(ir.color)
 
-  if ("indel_table" %in% names(plot.tables)){
-    plot.tables$indel_table$bg_color <- rep("White", #Transparent("#FFFFFF", 0.9),
-                                            nrow(plot.tables$indel_table))
+  if (!is.null(indel_table)){
+    indel_table$bg_color <- rep("White", #Transparent("#FFFFFF", 0.9),
+                                            nrow(indel_table))
   }
 
 
-  plot.tables$ir_table$y <- rep(0.25, nrow(plot.tables$ir_table))
-  plot.tables$ir_table$y[grepl("IR", plot.tables$ir_table$name)] <- 0.75
+  ir_table$y <- rep(0.25, nrow(ir_table))
+  ir_table$y[grepl("IR", ir_table$name)] <- 0.75
 
   # 3. Genome information
   n_trn <- sum(grepl("trn", gene_table$gene, perl = TRUE))
@@ -331,7 +421,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
   # Initialize the plot device
   if (save){
     if (is.null(file.name)){
-      file <- plot.tables$sp_name
+      file <- sp_name
     } else {
       file <- file.name
     }
@@ -349,9 +439,9 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 
 
   # Initialize the layout
-  ssc_deg<-plot.tables$ir_table$center[which(plot.tables$ir_table$name=="SSC")][1]
+  ssc_deg<-ir_table$center[which(ir_table$name=="SSC")][1]
   if ((length(ssc_deg) == 1) & !is.na(ssc_deg)){
-    ssc_deg <- 360 - round(((ssc_deg)/L) * 360)
+    ssc_deg <- 360 - round(((ssc_deg)/l) * 360)
     rotate <- 270 - ssc_deg
   } else {
     rotate <- -90
@@ -395,7 +485,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
   circlize::circos.par(start.degree = rotate,
                        gap.after = 0,
                        track.margin = c(0, 0), cell.padding = c(0, 0, 0, 0))
-  circlize::circos.genomicInitialize(data=data.frame(chr="chr1", start=0, end=L,
+  circlize::circos.genomicInitialize(data=data.frame(chr="chr1", start=0, end=l,
                                                      stringsAsFactors = FALSE),
                                      plotType = NULL)
 
@@ -484,11 +574,11 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                     }
 
                                     # the bars in the middle indicate the IR, SSR, LSR
-                                    circlize::circos.rect(xleft = plot.tables$ir_table$start,
+                                    circlize::circos.rect(xleft = ir_table$start,
                                                           ybottom = - 0.05,
-                                                          xright = plot.tables$ir_table$end,
+                                                          xright = ir_table$end,
                                                           ytop = 0.05,
-                                                          col = plot.tables$ir_table$bg_col,
+                                                          col = ir_table$bg_col,
                                                           border = NA)
                                   })
   } else if (nrow(gene_table_f) != 0){
@@ -527,11 +617,11 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                      )
                                    }
                                    # the bars in the middle indicate the IR, SSR, LSR
-                                   circlize::circos.rect(xleft = plot.tables$ir_table$start,
+                                   circlize::circos.rect(xleft = ir_table$start,
                                                          ybottom = - 0.05,
-                                                         xright = plot.tables$ir_table$end,
+                                                         xright = ir_table$end,
                                                          ytop = 0.05,
-                                                         col = plot.tables$ir_table$bg_col,
+                                                         col = ir_table$bg_col,
                                                          border = NA)
                                  })
     track_index[3:length(track_index)] <- track_index[3:length(track_index)] - 2
@@ -572,11 +662,11 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                     }
 
                                     # the bars in the middle indicate the IR, SSR, LSR
-                                    circlize::circos.rect(xleft = plot.tables$ir_table$start,
+                                    circlize::circos.rect(xleft = ir_table$start,
                                                           ybottom = - 0.05,
-                                                          xright = plot.tables$ir_table$end,
+                                                          xright = ir_table$end,
                                                           ytop = 0.05,
-                                                          col = plot.tables$ir_table$bg_col,
+                                                          col = ir_table$bg_col,
                                                           border = NA)
                                   })
     track_index[(which(names(track_index) == "gene inner 2") + 1):length(track_index)] <-
@@ -632,7 +722,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                     cex = 0.2 * text.size,
                                                     col = style$col,
                                                     lwd = style$lwd)
-                             circlize::circos.segments(x0=0, x1=L, y0=0,
+                             circlize::circos.segments(x0=0, x1=l, y0=0,
                                                        y1=0, lwd=0.5,
                                                        lty="16",
                                                        col=darken(gc.color, 0.7))
@@ -676,7 +766,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                     cex = 0.2 * text.size,
                                                     col = style$col,
                                                     lwd = style$lwd)
-                             circlize::circos.segments(x0=0, x1=L, y0=0,
+                             circlize::circos.segments(x0=0, x1=l, y0=0,
                                                        y1=0, lwd=0.5,
                                                        lty="16",
                                                        col=darken(gc.color, 0.7))
@@ -737,8 +827,8 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
   circlize::circos.track(ylim = c(0, 1), track.height = 0.06, bg.border = NA,
                          track.margin = c(0, circlize::convert_height(1, "mm")),
                          panel.fun = function(x, y) {
-                           circlize::circos.arrow(x1 = L - L %/% 40,
-                                                  x2 = L,
+                           circlize::circos.arrow(x1 = l - l %/% 40,
+                                                  x2 = l,
                                                   y = 0.85,
                                                   arrow.position="start",
                                                   col = MildColor(background),
@@ -751,9 +841,9 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 
 
   # 7. GC content
-  circlize::circos.track(factors =as.factor(plot.tables$gc_count$chr),
-                         x=plot.tables$gc_count$position,
-                         y = 1- plot.tables$gc_count$gc_count,
+  circlize::circos.track(factors =as.factor(gc_count$chr),
+                         x=gc_count$position,
+                         y = 1- gc_count$gc_count,
                          ylim = c(0, 1),
                          track.height = height[2],
                          bg.border = NA, bg.col = gc.background,
@@ -762,19 +852,19 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                   baseline = "top",
                                                   col = gc.color, lwd = 0.00001)
                            circlize::circos.arrow(x1= 0,
-                                                  x2= L %/% 35,
+                                                  x2= l %/% 35,
                                                   y= 0.9,
                                                   col=MildColor(gc.color),
                                                   border=NA,
                                                   arrow.head.length=circlize::convert_x(3, "mm"),
                                                   width=0.15 * 0.05 / height[2])
-                           circlize::circos.segments(x0=0, x1=L, y0=0.25,
+                           circlize::circos.segments(x0=0, x1=l, y0=0.25,
                                                      y1=0.25, lwd=0.5,
                                                      lty="16", col=MildColor(gc.background))
-                           circlize::circos.segments(x0=0, x1=L, y0=0.5,
+                           circlize::circos.segments(x0=0, x1=l, y0=0.5,
                                                      y1=0.5, lwd=0.6,
                                                      lty="11", col=MildColor(gc.background))
-                           circlize::circos.segments(x0=0, x1=L, y0=0.75,
+                           circlize::circos.segments(x0=0, x1=l, y0=0.75,
                                                      y1=0.75, lwd=0.5,
                                                      lty="16", col=MildColor(gc.color))
                            circlize::circos.genomicAxis(h = "top", labels.cex = 0.4 * text.size)
@@ -783,54 +873,54 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
   #             labels.col="grey40",col="#FFFFFF")
 
   # 8. inner ring for IR, SSR, LSR
-  circlize::circos.genomicTrack(plot.tables$ir_table, bg.border = NA,
+  circlize::circos.genomicTrack(ir_table, bg.border = NA,
                                 ylim = c(0, 1),track.height = height[3],
                                 panel.fun = function(region, value, ...) {
                                   if (ir.gc){
-                                    circlize::circos.rect(xleft = plot.tables$ir_table$start,
+                                    circlize::circos.rect(xleft = ir_table$start,
                                                           ybottom = 0,#circlize::convert_y(0, "mm"),
-                                                          xright = plot.tables$ir_table$end,
+                                                          xright = ir_table$end,
                                                           ytop = 1,#circlize::convert_y(3, "mm"),
-                                                          col = Transparent(plot.tables$ir_table$bg_col, 0.7),
+                                                          col = Transparent(ir_table$bg_col, 0.7),
                                                           border = NA)
-                                    circlize::circos.rect(xleft = plot.tables$ir_table$start,
+                                    circlize::circos.rect(xleft = ir_table$start,
                                                           ybottom =0,#circlize::convert_y(0, "mm"),
-                                                          xright = plot.tables$ir_table$end,
-                                                          ytop =  plot.tables$ir_table$gc_count,#circlize::convert_y(3, "mm"),
-                                                          col = plot.tables$ir_table$bg_col,
+                                                          xright = ir_table$end,
+                                                          ytop =  ir_table$gc_count,#circlize::convert_y(3, "mm"),
+                                                          col = ir_table$bg_col,
                                                           border = NA)
                                   } else {
-                                    circlize::circos.rect(xleft = plot.tables$ir_table$start,
+                                    circlize::circos.rect(xleft = ir_table$start,
                                                           ybottom = 0,#circlize::convert_y(0, "mm"),
-                                                          xright = plot.tables$ir_table$end,
+                                                          xright = ir_table$end,
                                                           ytop = 1,#circlize::convert_y(3, "mm"),
-                                                          col = plot.tables$ir_table$bg_col,
+                                                          col = ir_table$bg_col,
                                                           border = NA)
                                   }
-                                  if ("indel_table" %in% names(plot.tables)){
-                                    circlize::circos.rect(xleft = plot.tables$indel_table$position - 10,
+                                  if (!is.null(indel_table)){
+                                    circlize::circos.rect(xleft = indel_table$position - 10,
                                                           ybottom = 0,#circlize::convert_y(0, "mm"),
-                                                          xright = plot.tables$indel_table$position + 10,
+                                                          xright = indel_table$position + 10,
                                                           ytop = 1,#circlize::convert_y(3, "mm"),
-                                                          col = plot.tables$indel_table$bg_col,
+                                                          col = indel_table$bg_col,
                                                           border = NA)
-                                    circlize::circos.points(x = plot.tables$indel_table$position,
+                                    circlize::circos.points(x = indel_table$position,
                                                             y = 0.05,
-                                                            col = plot.tables$indel_table$col,
+                                                            col = indel_table$col,
                                                             pch = 19,
                                                             cex = 0.2 * text.size)
-                                    # circlize::circos.text(x = plot.tables$indel_table$position,
+                                    # circlize::circos.text(x = indel_table$position,
                                     #                         y = 0.5,
-                                    #                         col = plot.tables$indel_table$col,
-                                    #                         labels = plot.tables$indel_table$string,
+                                    #                         col = indel_table$col,
+                                    #                         labels = indel_table$string,
                                     #                         cex = 0.2 * text.size)
                                   }
 
-                                  circlize::circos.text(x = plot.tables$ir_table$center,
-                                                        y = plot.tables$ir_table$y, cex = 0.7 * text.size,
-                                                        labels = plot.tables$ir_table$text,
+                                  circlize::circos.text(x = ir_table$center,
+                                                        y = ir_table$y, cex = 0.7 * text.size,
+                                                        labels = ir_table$text,
                                                         facing = "bending.inside",
-                                                        col = plot.tables$ir_table$inf_col,
+                                                        col = ir_table$inf_col,
                                                         niceFacing = TRUE)
                                 })
 
@@ -841,10 +931,10 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                         rou2 = 0,
                         col = info.background, border = NA)
 
-  graphics::text(0,0.05, plot.tables$sp_name, font=4, cex = 0.9 * text.size, col = info.color)
+  graphics::text(0,0.05, sp_name, font=4, cex = 0.9 * text.size, col = info.color)
   ns <- c(paste(n_gene, "genes"), paste(n_rrn, "rRNAs"), paste(n_trn, "tRNAs"))[which(c(gene.no, rrn.no, trn.no))]
-  text <- c(paste(ns, collapse = "; "), paste(prettyNum(L, big.mark = ","), "bp", " "),
-            paste("GC:",round(plot.tables$gc_total, 2)*100,"%"))
+  text <- c(paste(ns, collapse = "; "), paste(prettyNum(l, big.mark = ","), "bp", " "),
+            paste("GC:",round(gc_total, 2)*100,"%"))
   j <- 1
   if (cu.bias){
     cex = 0.8 * text.size
@@ -860,13 +950,13 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
   # Highlight IR
 
 
-  if (shadow & (nrow(plot.tables$ir_table) >= 4)){
+  if (shadow & (nrow(ir_table) >= 4)){
 
-    pos_s=circlize::circlize(plot.tables$ir_table$start[which(grepl("IR",
-                                                                    plot.tables$ir_table$name))],
+    pos_s=circlize::circlize(ir_table$start[which(grepl("IR",
+                                                                    ir_table$name))],
                              1, sector.index = "chr1", track.index = 1)
-    pos_e=circlize::circlize(plot.tables$ir_table$end[which(grepl("IR",
-                                                                  plot.tables$ir_table$name))],
+    pos_e=circlize::circlize(ir_table$end[which(grepl("IR",
+                                                                  ir_table$name))],
                              1, sector.index = "chr1", track.index = 1)
     for (i in 1:nrow(pos_s)) {
       if ('gene' %in% names(track_index)){
@@ -888,10 +978,10 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
       }
 
     }
-    if ("indel_table" %in% names(plot.tables)) {
-      pos_s=circlize::circlize(plot.tables$indel_table$position - 10,
+    if (!is.null(indel_table)) {
+      pos_s=circlize::circlize(indel_table$position - 10,
                                1, sector.index = "chr1", track.index = 1)
-      pos_e=circlize::circlize(plot.tables$indel_table$position + 10,
+      pos_e=circlize::circlize(indel_table$position + 10,
                                1, sector.index = "chr1", track.index = 1)
       for (i in 1:nrow(pos_s)) {
         if ('gene' %in% names(track_index)){
