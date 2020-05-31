@@ -16,17 +16,15 @@ irDetect <- function(genome, seed.size = 1000) {
   m <- map_genome(genome, seed_starts = seed_starts, seed.size = seed.size,
                   other_letter = other_letter)
   if (nrow(m) == 0){ # if there is no matches return empty table
-    gc_count <- Biostrings::letterFrequency(genome, letters = c("C", "G"))
-    gc_count <- round((gc_count[1] + gc_count[2])/l)
     ir_table <- data.frame(chr = "chr1",
                            start = 0,
                            end = l,
                            center = round(l/2),
                            name = "Genome",
                            text = paste("Genome:", l),
-                           gc_count = gc_count,
                            stringsAsFactors = FALSE)
-    return(ir_table)
+    ir_table <- gc_count_ir(genome, ir_table)
+    return(list(ir_table = ir_table, indel_table = NULL))
   }
 
   # if IRA cover genome start point, shift the genome sequence backward with seed.size

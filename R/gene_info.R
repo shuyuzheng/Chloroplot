@@ -200,7 +200,7 @@ codonUsage <- function(cds, genome){
 
     names(cds_seq_f) <- tmp$gene
     cds_cu_f <- coRdon::codonTable(cds_seq_f)
-    cds_cu_f <- coRdon::MILC(cds_cu_f)
+    cds_cu_f <- as.vector(coRdon::MILC(cds_cu_f))
     cds_cu_f <- data.frame(cu_bias = cds_cu_f, gene = tmp$gene,
                            start = tmp$start,
                            strand = rep("+", nrow(tmp)),
@@ -242,7 +242,7 @@ codonUsage <- function(cds, genome){
     names(cds_seq_r) <- tmp$gene
     cds_seq_r <- Biostrings::reverseComplement(cds_seq_r)
     cds_cu_r <- coRdon::codonTable(cds_seq_r)
-    cds_cu_r <- coRdon::MILC(cds_cu_r)
+    cds_cu_r <- as.vector(coRdon::MILC(cds_cu_r))
     cds_cu_r <- data.frame(cu_bias = cds_cu_r, gene = tmp$gene,
                            start = tmp$start,
                            strand = rep("-", nrow(tmp)),

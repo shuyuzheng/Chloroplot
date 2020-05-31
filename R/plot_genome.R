@@ -254,9 +254,6 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
   l <- Biostrings::nchar(genome)
 
   # 1. Modify gene table
-  if (nrow(ir_table) == 1){
-    ir_table$text <- gsub("LSC", "Genome", ir_table$text[1])
-  }
 
   # ssc covert
   if (ssc.converse){
@@ -399,6 +396,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
   ir_table$bg_col[ir_table$name == "LSC"] <- lsc.color
   ir_table$bg_col[ir_table$name == "SSC"] <- ssc.color
   ir_table$bg_col[grepl("IR", ir_table$name)] <- ir.color
+  ir_table$bg_col[ir_table$name == "Genome"] <- lsc.color
 
 
   # Automatically adjust colors
@@ -408,6 +406,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
   ir_table$inf_col[ir_table$name=="LSC"] <- CompColor(lsc.color)
   ir_table$inf_col[ir_table$name=="SSC"] <- CompColor(ssc.color)
   ir_table$inf_col[grepl("IR", ir_table$name)] <- CompColor(ir.color)
+  ir_table$inf_col[ir_table$name == "Genome"] <- CompColor(lsc.color)
 
   if (!is.null(indel_table)){
     indel_table$bg_color <- rep("White", #Transparent("#FFFFFF", 0.9),
