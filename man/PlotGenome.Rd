@@ -47,6 +47,9 @@ PlotGenome(
   trn.color = "#172C7F",
   rrn.color = "#D1382A",
   other_gene.color = "#7D7D7D",
+  gene_axis_ir.color = ir.color,
+  gene_axis_ssc.color = ssc.color,
+  gene_axis_lsc.color = lsc.color,
   cu.bias = TRUE,
   customize.ring1 = NULL,
   customize.ring1.type = "line",
@@ -186,6 +189,15 @@ ribosomal RNA}
 
 \item{other_gene.color}{An R color object. It indecates the color for other
 genes}
+
+\item{gene_axis_ir.color}{An R color object. It indecates the color for other
+genes.}
+
+\item{gene_axis_ssc.color}{An R color object. It indecates the color for other
+genes.}
+
+\item{gene_axis_lsc.color}{An R color object. It indecates the color for other
+genes.}
 
 \item{cu.bias}{A logical value. If it is \code{TRUE}, the condon usage bias
 metric for each gene will be shown in the labels. The metric “Measure

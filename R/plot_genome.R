@@ -181,6 +181,12 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #' ribosomal RNA
 #' @param other_gene.color An R color object. It indecates the color for other
 #' genes
+#' @param gene_axis_ir.color An R color object. It indecates the color for other
+#' genes.
+#' @param gene_axis_lsc.color An R color object. It indecates the color for other
+#' genes.
+#' @param gene_axis_ssc.color An R color object. It indecates the color for other
+#' genes.
 #' @param customize.ring1 A data frame. It must contain 2 columns:
 #' \itemize{
 #'   \item \strong{position}: 1-base genomic coordinate for the features.
@@ -235,6 +241,9 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                        rpl.color = "#9C7A4B", clp_mat_inf.color = "#D9662D",
                        ycf.color = "#71B8A9", trn.color = "#172C7F",
                        rrn.color = "#D1382A", other_gene.color = "#7D7D7D",
+                       gene_axis_ir.color = ir.color,
+                       gene_axis_ssc.color = ssc.color,
+                       gene_axis_lsc.color = lsc.color,
                        cu.bias = TRUE, customize.ring1 = NULL,
                        customize.ring1.type = "line",
                        customize.ring2 = NULL,
@@ -398,6 +407,12 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
   ir_table$bg_col[grepl("IR", ir_table$name)] <- ir.color
   ir_table$bg_col[ir_table$name == "Genome"] <- lsc.color
 
+
+  ir_table$axis_col <- rep(NA, nrow(ir_table))
+  ir_table$axis_col[ir_table$name == "LSC"] <- gene_axis_lsc.color
+  ir_table$axis_col[ir_table$name == "SSC"] <- gene_axis_ssc.color
+  ir_table$axis_col[grepl("IR", ir_table$name)] <- gene_axis_ir.color
+  ir_table$axis_col[ir_table$name == "Genome"] <- gene_axis_lsc.color
 
   # Automatically adjust colors
   info.color <- CompColor(info.background)
@@ -583,7 +598,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                           ybottom = - 0.05,
                                                           xright = ir_table$end,
                                                           ytop = 0.05,
-                                                          col = ir_table$bg_col,
+                                                          col = ir_table$axis_col,
                                                           border = NA)
                                   })
   } else if (nrow(gene_table_f) != 0){
@@ -626,7 +641,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                          ybottom = - 0.05,
                                                          xright = ir_table$end,
                                                          ytop = 0.05,
-                                                         col = ir_table$bg_col,
+                                                         col = ir_table$axis_col,
                                                          border = NA)
                                  })
     track_index[3:length(track_index)] <- track_index[3:length(track_index)] - 2
@@ -671,7 +686,7 @@ PlotGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                           ybottom = - 0.05,
                                                           xright = ir_table$end,
                                                           ytop = 0.05,
-                                                          col = ir_table$bg_col,
+                                                          col = ir_table$axis_col,
                                                           border = NA)
                                   })
     track_index[(which(names(track_index) == "gene inner 2") + 1):length(track_index)] <-
