@@ -186,7 +186,7 @@ map_genome <- function(genome, seed_starts, seed.size = 1000,
 detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
 
   if (other_letter){
-    s_mat <- nucleotideSubstitutionMatrix()
+    s_mat <- Biostrings::nucleotideSubstitutionMatrix()
     ir_map_a <- Biostrings::pairwiseAlignment(pattern = ira_seq,
                                               subject = Biostrings::reverseComplement(irb_seq),
                                               fuzzyMatrix = s_mat,
@@ -194,8 +194,8 @@ detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
 
     ir_map_b <- Biostrings::pairwiseAlignment(pattern = irb_seq,
                                               subject = Biostrings::reverseComplement(ira_seq),
-                                              fuzzyMatrix = nucleotideSubstitutionMatrix(),
-                                              substitutionMatrix = nucleotideSubstitutionMatrix())
+                                              fuzzyMatrix = s_mat,
+                                              substitutionMatrix = s_mat)
   } else {
     ir_map_a <- Biostrings::pairwiseAlignment(pattern = ira_seq,
                                               subject = Biostrings::reverseComplement(irb_seq))
@@ -207,7 +207,7 @@ detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
 
   ## insert table for IRA and delete table for IRB
 
-  insert_table_a <- suppressWarnings(data.frame(insertion(ir_map_a)))
+  insert_table_a <- suppressWarnings(data.frame(Biostrings::insertion(ir_map_a)))
 
   if (nrow(insert_table_a) != 0){
 
@@ -229,7 +229,7 @@ detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
       insert_a <- rbind.data.frame(insert_a, tmp)
     }
 
-    delete_table_b <- suppressWarnings(data.frame(deletion(ir_map_b))) %>%
+    delete_table_b <- suppressWarnings(data.frame(Biostrings::deletion(ir_map_b))) %>%
       dplyr::mutate(position = start + irb_s - 1) %>%
       dplyr::mutate(string = rep("D", n())) %>%
       dplyr::mutate(mismatch_type = rep("delete", n())) %>%
@@ -241,7 +241,7 @@ detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
   }
 
   ## insert table for IRB and delete table for IRA
-  insert_table_b <- suppressWarnings(data.frame(insertion(ir_map_b)))
+  insert_table_b <- suppressWarnings(data.frame(Biostrings::insertion(ir_map_b)))
 
   if (nrow(insert_table_b) != 0) {
 
@@ -264,7 +264,7 @@ detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
     }
 
 
-    delete_table_a <- suppressWarnings(data.frame(deletion(ir_map_a))) %>%
+    delete_table_a <- suppressWarnings(data.frame(Biostrings::deletion(ir_map_a))) %>%
       dplyr::mutate(position = start + ira_s - 1) %>%
       dplyr::mutate(string = rep("D", n())) %>%
       dplyr::mutate(mismatch_type = rep("delete", n())) %>%

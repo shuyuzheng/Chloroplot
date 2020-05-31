@@ -17,6 +17,9 @@ PlotGenome(
   pseudo = TRUE,
   legend = TRUE,
   ssc.converse = FALSE,
+  lsc.converse = FALSE,
+  ira.converse = FALSE,
+  irb.converse = FALSE,
   genome.length = TRUE,
   total.gc = TRUE,
   gene.no = TRUE,
@@ -46,7 +49,10 @@ PlotGenome(
   other_gene.color = "#7D7D7D",
   cu.bias = TRUE,
   customize.ring1 = NULL,
-  customize.ring2 = NULL
+  customize.ring1.type = "line",
+  customize.ring2 = NULL,
+  customize.ring2.type = "line",
+  customize.ring3 = NULL
 )
 }
 \arguments{
@@ -89,6 +95,15 @@ labels.}
 colors will be shown.}
 
 \item{ssc.converse}{A logical value. If it is \code{TRUE}, the SSC region
+will be converted to its reverse complementary version}
+
+\item{lsc.converse}{A logical value. If it is \code{TRUE}, the LSC region
+will be converted to its reverse complementary version}
+
+\item{ira.converse}{A logical value. If it is \code{TRUE}, the IRA region
+will be converted to its reverse complementary version}
+
+\item{irb.converse}{A logical value. If it is \code{TRUE}, the IRB region
 will be converted to its reverse complementary version}
 
 \item{genome.length}{A logical value. If it is \code{TRUE}, the length of
@@ -177,9 +192,34 @@ metric for each gene will be shown in the labels. The metric “Measure
 Independent of Length and Composition (MILC)” was used for evaluate the bias.
 You can find more details in the reference paper.}
 
-\item{customize.ring1}{coming soon}
+\item{customize.ring1}{A data frame. It must contain 2 columns:
+\itemize{
+  \item \strong{position}: 1-base genomic coordinate for the features.
+  \item \strong{value}: the values for the features.
+}}
 
-\item{customize.ring2}{coming soon}
+\item{customize.ring1.type}{A charactor. It indicate the plot type in
+customize.ring1. Avaliable values are "line", "line + filling", "line + dot",
+"line + dot + filling", "step line", "step line + filling", "vertical line"}
+
+\item{customize.ring2}{A data frame. It must contain 2 columns:
+\itemize{
+  \item \strong{position}: 1-base genomic coordinate for the features.
+  \item \strong{value}: the values for the features.
+}}
+
+\item{customize.ring2.type}{A charactor. It indicate the plot type in
+customize.ring2. Avaliable values are "line", "line + filling", "line + dot",
+"line + dot + filling", "step line", "step line + filling", "vertical line"}
+
+\item{customize.ring3}{A data frame. It must contain 2 columns:
+\itemize{
+  \item \strong{start}: 1-base genomic coordinate for the start point of the
+  features.
+  \item \strong{end}: 1-base genomic coordinate for the end point of the
+  features.
+  \item \strong{value}: the values for the features.
+}}
 }
 \value{
 A plot for chloroplast genome.

@@ -103,6 +103,12 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #' colors will be shown.
 #' @param ssc.converse A logical value. If it is \code{TRUE}, the SSC region
 #' will be converted to its reverse complementary version
+#' @param lsc.converse A logical value. If it is \code{TRUE}, the LSC region
+#' will be converted to its reverse complementary version
+#' @param ira.converse A logical value. If it is \code{TRUE}, the IRA region
+#' will be converted to its reverse complementary version
+#' @param irb.converse A logical value. If it is \code{TRUE}, the IRB region
+#' will be converted to its reverse complementary version
 #' @param background An R color object. It indicates the color for the background of
 #' entire plot area.
 #' @param height A vector of numeric value. The elements of it indicat the
