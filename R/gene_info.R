@@ -125,7 +125,7 @@ geneTableRead <- function(gb, genome){
 
   # codon usage
   cds <- as.data.frame(genbankr::cds(gb))
-  cds_cu <- codonUsage(cds, codonUsage)
+  cds_cu <- codonUsage(cds, genome)
   if (is.null(cds_cu)){
     gene_table$cu_bias <- rep(NA, nrow(gene_table))
   } else {

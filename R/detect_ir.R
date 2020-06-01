@@ -1,4 +1,4 @@
-irDetect <- function(genome, seed.size = 1000) {
+irDetect <- function(genome, seed.size = 100) {
   tick = 0
 
   # Matching seeds to genome ------------------------------------------------
@@ -31,16 +31,19 @@ irDetect <- function(genome, seed.size = 1000) {
   while(m$group[1] == 1){
     tick <- tick + seed.size
     genome <- c(genome[(l - tick + 1):l], genome[1:(l - tick)])
-    m <- map_genome(genome, seed_starts = seed_starts, seed.size = seed.size)
+    m <- map_genome(genome, seed_starts = seed_starts, seed.size = seed.size,
+                    other_letter = other_letter)
   }
 
   # if IRB cover genome end point, shift the genome sequence forward with seed.size
   while(m$group[nrow(m)] == l){
     tick <- tick - seed.size
     genome <- c(genome[(- tick + 1):l], genome[1: -tick])
-    m <- map_genome(genome, seed_starts = seed_starts, seed.size = seed.size)
+    m <- map_genome(genome, seed_starts = seed_starts, seed.size = seed.size,
+                    other_letter = other_letter)
   }
 
+  m <- m[!duplicated(m$group),]
   # IRA start, end and lenght
   df <- data.frame(group_before = m$group[-nrow(m)],
                    group_after = m$group[-1],
@@ -58,11 +61,20 @@ irDetect <- function(genome, seed.size = 1000) {
     rbind.data.frame(dplyr::filter(df, group_diff != 0)) %>%
     dplyr::arrange(group_before)
 
+
   # get start and end points for IRA and IRB (1-base)
-  ira_s <- pos$group_before[1]
-  ira_e <- pos$group_before[(nrow(pos)+1)/2] + seed.size - 1
-  irb_s <- pos$group_after[(nrow(pos)+1)/2]
-  irb_e <- pos$group_after[nrow(pos)] + seed.size - 1
+  if (sum(pos$start_diff < 0) > 0){
+    ira_s <- pos$group_before[1]
+    ira_e <- pos$group_before[which.max(pos$group_diff)] + seed.size - 1
+    irb_s <- l - pos$start_before[which.max(pos$group_diff)] - seed.size + 2
+    irb_e <- l - pos$start_before[1] + 1
+  } else {
+    ira_s <- pos$group_before[1]
+    ira_e <- pos$group_before[(nrow(pos)+1)/2] + seed.size - 1
+    irb_s <- pos$group_after[(nrow(pos)+1)/2]
+    irb_e <- pos$group_after[nrow(pos)] + seed.size - 1
+  }
+
 
 
   # Detecting indels and replaces in IR-----------------------------------------
@@ -72,8 +84,8 @@ irDetect <- function(genome, seed.size = 1000) {
     irb_seq <- genome[irb_s:irb_e]
     other_letter <- (Biostrings::letterFrequency(ira_seq, letters = "ATCG") !=
                        Biostrings::nchar(ira_seq)) |
-      (Biostrings::letterFrequency(ira_seq, letters = "ATCG") !=
-                                            Biostrings::nchar(ira_seq))
+      (Biostrings::letterFrequency(irb_seq, letters = "ATCG") !=
+                                            Biostrings::nchar(irb_seq))
     indel_table <- detect_mismatch(ira_seq = ira_seq, irb_seq = irb_seq,
                                    ira_s = ira_s, irb_s = irb_s,
                                    other_letter = other_letter)
@@ -106,7 +118,7 @@ irDetect <- function(genome, seed.size = 1000) {
                            end = c(ira_e - tick, irb_s - tick,
                                    irb_e - tick, l-(tick - ira_s), l),
                            name = c("IRA", "SSC", "IRB", "LSC", "IRA"),
-                           tex = c(paste("IRA:", ira_len),
+                           text = c(paste("IRA:", ira_len),
                                    paste("SSC:", ssc_len),
                                    paste("IRB:", irb_len),
                                    paste("LSC:", lsc_len),
@@ -119,7 +131,7 @@ irDetect <- function(genome, seed.size = 1000) {
                            end = c((irb_e - tick - l), ira_s - tick,
                                    ira_e - tick, irb_s - tick, l),
                            name = c("IRB", "LSC", "IRA", "SSC", "IRB"),
-                           tex = c(paste("IRB:", irb_len),
+                           text = c(paste("IRB:", irb_len),
                                    paste("LSC:", lsc_len),
                                    paste("IRA:", irb_len),
                                    paste("SSC:", ssc_len),
@@ -184,16 +196,15 @@ map_genome <- function(genome, seed_starts, seed.size = 1000,
 detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
 
   if (other_letter){
-    s_mat <- Biostrings::nucleotideSubstitutionMatrix()
     ir_map_a <- Biostrings::pairwiseAlignment(pattern = ira_seq,
                                               subject = Biostrings::reverseComplement(irb_seq),
-                                              fuzzyMatrix = s_mat,
-                                              substitutionMatrix = s_mat)
+                                              fuzzyMatrix = Biostrings::nucleotideSubstitutionMatrix(),
+                                              substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix())
 
     ir_map_b <- Biostrings::pairwiseAlignment(pattern = irb_seq,
                                               subject = Biostrings::reverseComplement(ira_seq),
-                                              fuzzyMatrix = s_mat,
-                                              substitutionMatrix = s_mat)
+                                              fuzzyMatrix = Biostrings::nucleotideSubstitutionMatrix(),
+                                              substitutionMatrix = Biostrings::nucleotideSubstitutionMatrix())
   } else {
     ir_map_a <- Biostrings::pairwiseAlignment(pattern = ira_seq,
                                               subject = Biostrings::reverseComplement(irb_seq))
@@ -279,7 +290,7 @@ detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
   if (nrow(replace_table_a) != 0){
     tmp <- NULL
     for (i in 1:nrow(replace_table_a)){
-      if (s_mat[as.character(replace_table_a$PatternSubstring[i]),
+      if (Biostrings::nucleotideSubstitutionMatrix()[as.character(replace_table_a$PatternSubstring[i]),
                 as.character(replace_table_a$SubjectSubstring[i])] != 0){
         tmp <- c(tmp, i)
       }
@@ -303,7 +314,7 @@ detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
 
     tmp <- NULL
     for (i in 1:nrow(replace_table_b)){
-      if (s_mat[as.character(replace_table_b$PatternSubstring[i]),
+      if (Biostrings::nucleotideSubstitutionMatrix()[as.character(replace_table_b$PatternSubstring[i]),
                 as.character(replace_table_b$SubjectSubstring[i])] != 0){
         tmp <- c(tmp, i)
       }

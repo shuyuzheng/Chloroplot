@@ -22,7 +22,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
   if (local.file){
     tryCatch({
       gb <- genbankr::readGenBank(gbfile)
-      genome <- genbankr::getSeq(gb)
+      genome <- genbankr::getSeq(gb)[[1]]
       #genome <- rdnFixer(genome)
       l<- Biostrings::nchar(genome)
       sp_name <- sp.name(gb@definition)
@@ -57,7 +57,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 
 
   # 1. IR LSC SSC -----------------------------------------------------------
-  ir <- irDetect(genome)
+  ir <- irDetect(genome, seed.size = 100)
 
   # 2. Gene table -----------------------------------------------------------
 
