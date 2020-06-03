@@ -22,6 +22,7 @@ PlotPlasitGenome(
   irb.converse = FALSE,
   genome.length = TRUE,
   total.gc = TRUE,
+  show.indel = TRUE,
   gene.no = TRUE,
   rrn.no = TRUE,
   trn.no = TRUE,
@@ -47,6 +48,8 @@ PlotPlasitGenome(
   trn.color = "#172C7F",
   rrn.color = "#D1382A",
   other_gene.color = "#7D7D7D",
+  show.genes = c("psa", "psb", "pet", "atp", "ndh", "rbc", "rpo", "rps", "rpl",
+    "clp|mat|inf", "ycf", "trn", "rrn", "OTHER"),
   gene_axis_ir.color = ir.color,
   gene_axis_ssc.color = ssc.color,
   gene_axis_lsc.color = lsc.color,
@@ -114,6 +117,9 @@ genome will be shown in the center of the plot.}
 
 \item{total.gc}{A logical value. If it is \code{TRUE}, the GC content of
 whole genome will be shown in the center of the plot.}
+
+\item{show.indel}{A logical value. If it is \code{TRUE}, the SNP, insertion
+and deletion areas in IR regions will be highlighted on the plot.}
 
 \item{gene.no}{A logical value. If it is \code{TRUE}, the number of genes in
 the genome will be shown in the center of the plot.}
@@ -232,6 +238,10 @@ customize.ring2. Avaliable values are "line", "line + filling", "line + dot",
   features.
   \item \strong{value}: the values for the features.
 }}
+
+\item{show.gene}{A vector of characters. It indicates which classes of genes
+will be shown on the plot. A valiable values are "psa","psb","pet","atp",
+"ndh","rbc", "rpo","rps","rpl", "clp|mat|inf","ycf", "trn","rrn", "OTHER"}
 }
 \value{
 A plot for chloroplast genome.

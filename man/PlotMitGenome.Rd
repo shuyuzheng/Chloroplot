@@ -39,6 +39,8 @@ PlotMitGenome(
   trn.color = "#172C7F",
   rrn.color = "#D1382A",
   other_gene.color = "#7D7D7D",
+  show.genes = c("nad|nd", "sdh", "cob", "cox|cytb", "atp", "ccmF", "mtt", "rps",
+    "rpl", "mat", "orf", "trn", "rrn", "OTHER"),
   cu.bias = TRUE,
   customize.ring1 = NULL,
   customize.ring1.type = "line",
@@ -181,6 +183,10 @@ customize.ring2. Avaliable values are "line", "line + filling", "line + dot",
   features.
   \item \strong{value}: the values for the features.
 }}
+
+\item{show.gene}{A vector of characters. It indicates which classes of genes
+will be shown on the plot. Avaliable values are "nad|nd","sdh","cob",
+"cox|cytb","atp", "ccmF","mtt","rps","rpl", "mat","orf","trn","rrn", "OTHER"}
 }
 \value{
 A plot for chloroplast genome.

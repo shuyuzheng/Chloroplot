@@ -77,9 +77,19 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
     }, error = function(e){
       ir <<- irDetect(genome, seed.size = 1000)
     })
-
+    gene_class <- c("psa","psb","pet","atp","ndh","rbc","rpo","rps","rpl",
+                  "clp|mat|inf","ycf","trn","rrn")
   } else {
     ir <- list(ir_table = NULL, indel_table = NULL)
+    gene_class <- c("nad|nd","sdh","cob","cox|cytb","atp","ccmF","mtt","rps","rpl",
+                  "mat","orf","trn","rrn")
+  }
+
+  gene_table$class <- rep("OTHER", nrow(gene_table))
+
+  for (i in gene_class){
+    gene_table$class[which(grepl(as.character(i),
+                                gene_table$gene, perl = TRUE))] <- i
   }
 
   # 3. GC count -------------------------------------------------------------
@@ -202,6 +212,9 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #' ribosomal RNA
 #' @param other_gene.color An R color object. It indecates the color for other
 #' genes
+#' @param show.gene A vector of characters. It indicates which classes of genes
+#' will be shown on the plot. A valiable values are "psa","psb","pet","atp",
+#' "ndh","rbc", "rpo","rps","rpl", "clp|mat|inf","ycf", "trn","rrn", "OTHER"
 #' @param gene_axis_ir.color An R color object. It indecates the color for other
 #' genes.
 #' @param gene_axis_lsc.color An R color object. It indecates the color for other
@@ -262,6 +275,9 @@ PlotPlasitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                        rpl.color = "#9C7A4B", clp_mat_inf.color = "#D9662D",
                        ycf.color = "#71B8A9", trn.color = "#172C7F",
                        rrn.color = "#D1382A", other_gene.color = "#7D7D7D",
+                       show.genes = c("psa","psb","pet","atp","ndh","rbc",
+                                      "rpo","rps","rpl", "clp|mat|inf","ycf",
+                                      "trn","rrn", "OTHER"),
                        gene_axis_ir.color = ir.color,
                        gene_axis_ssc.color = ssc.color,
                        gene_axis_lsc.color = lsc.color,
@@ -380,13 +396,12 @@ PlotPlasitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                            ycf.color = ycf.color, trn.color = trn.color,
                            rrn.color = rrn.color, other_gene.color = other_gene.color)
 
-  gene_table$col <- rep(color_table$col[which(color_table$acronym == "OTHER")],
-                                    nrow(gene_table))
-  for (i in 1:(nrow(color_table) - 1)){
-    gene_table$col[which(grepl(as.character(color_table$acronym[i]),
-                               gene_table$gene, perl = TRUE))] <-
-      color_table$col[i]
-  }
+  gene_table <- dplyr::left_join(gene_table, color_table, by = c("class" = "acronym"))
+
+  gene_table <- gene_table[which(gene_table$class %in% show.genes), ]
+
+  color_table <- color_table[which(color_table$acronym %in% unique(gene_table$class)), ]
+
   # gene labels
   gene_table$gene_label <- gene_table$gene
   if (cu.bias){
@@ -1133,6 +1148,9 @@ PlotPlasitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 #' ribosomal RNA
 #' @param other_gene.color An R color object. It indecates the color for other
 #' genes
+#' @param show.gene A vector of characters. It indicates which classes of genes
+#' will be shown on the plot. Avaliable values are "nad|nd","sdh","cob",
+#' "cox|cytb","atp", "ccmF","mtt","rps","rpl", "mat","orf","trn","rrn", "OTHER"
 #' @param customize.ring1 A data frame. It must contain 2 columns:
 #' \itemize{
 #'   \item \strong{position}: 1-base genomic coordinate for the features.
@@ -1183,11 +1201,9 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                           rpl.color = "#9C7A4B", mat.color = "#D9662D",
                           orf.color = "#71B8A9", trn.color = "#172C7F",
                           rrn.color = "#D1382A", other_gene.color = "#7D7D7D",
-                          show.nad = TRUE, show.sdh = TRUE, show.cob = TRUE,
-                          show.cox = TRUE, show.atp = TRUE, show.ccmF = TRUE,
-                          show.mmt = TRUE, show.rps = TRUE, show.rpl = TRUE,
-                          show.mat = TRUE, show.orf = TRUE, show.trn = TRUE,
-                          show.rrn = TRUE, show.other_gene = TRUE,
+                          show.genes = c("nad|nd","sdh","cob","cox|cytb","atp",
+                                         "ccmF","mtt","rps","rpl",
+                                         "mat","orf","trn","rrn", "OTHER"),
                           cu.bias = TRUE, customize.ring1 = NULL,
                           customize.ring1.type = "line",
                           customize.ring2 = NULL,
@@ -1216,13 +1232,13 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                               rrn.color = rrn.color,
                               other_gene.color = other_gene.color)
 
-  gene_table$col <- rep(color_table$col[which(color_table$acronym == "OTHER")],
-                        nrow(gene_table))
-  for (i in 1:(nrow(color_table) - 1)){
-    gene_table$col[which(grepl(as.character(color_table$acronym[i]),
-                               gene_table$gene, perl = TRUE, ignore.case = TRUE))] <-
-      color_table$col[i]
-  }
+
+  gene_table <- dplyr::left_join(gene_table, color_table, by = c("class" = "acronym"))
+
+  gene_table <- gene_table[which(gene_table$class %in% show.genes), ]
+
+  color_table <- color_table[which(color_table$acronym %in% unique(gene_table$class)), ]
+
   # gene labels
   gene_table$gene_label <- gene_table$gene
   if (cu.bias){
