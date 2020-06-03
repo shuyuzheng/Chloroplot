@@ -256,7 +256,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #' @importFrom magrittr %>%
 #' @import dplyr
 #' @export
-PlotPlasitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
+PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                        text.size = 1, height = c(0.1, 0.2, 0.07),
                        file.name = NULL, shadow = TRUE, ir.gc = TRUE,
                        gc.per.gene = TRUE, pseudo = TRUE, legend = TRUE,
