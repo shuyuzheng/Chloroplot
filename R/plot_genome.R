@@ -68,8 +68,16 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
   }
 
   # 2. IR LSC SSC -----------------------------------------------------------
+  # when seed.size is too short it will raise some error in irDetect function
+  # If it is too long, it cannot correctly detect the IR resions has mutation
+  # closing the ends.
   if (plastid){
-    ir <- irDetect(genome, seed.size = 100)
+    tryCatch({
+      ir <- irDetect(genome, seed.size = 100)
+    }, error = function(e){
+      ir <<- irDetect(genome, seed.size = 1000)
+    })
+
   } else {
     ir <- list(ir_table = NULL, indel_table = NULL)
   }
@@ -112,6 +120,8 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #' casted from IR sectors.
 #' @param legend A logical value. If it is \code{TRUE}, the legend for gene
 #' colors will be shown.
+#' @param show.indel A logical value. If it is \code{TRUE}, the SNP, insertion
+#' and deletion areas in IR regions will be highlighted on the plot.
 #' @param ssc.converse A logical value. If it is \code{TRUE}, the SSC region
 #' will be converted to its reverse complementary version
 #' @param lsc.converse A logical value. If it is \code{TRUE}, the LSC region
@@ -239,7 +249,7 @@ PlotPlasitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                        gc.per.gene = TRUE, pseudo = TRUE, legend = TRUE,
                        ssc.converse = FALSE, lsc.converse = FALSE,
                        ira.converse = FALSE, irb.converse = FALSE,
-                       genome.length = TRUE, total.gc = TRUE,
+                       genome.length = TRUE, total.gc = TRUE, show.indel = TRUE,
                        gene.no = TRUE, rrn.no = TRUE,trn.no = TRUE,
                        background = "grey90",gc.color = "grey30",
                        gc.background = "grey70", info.background = "black",
@@ -280,7 +290,6 @@ PlotPlasitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
     if (nrow(ir_table) == 1){
       warning("Didn't get IR region from thid species. ",
               "It's impossible to convert SSC region.")
-      gene_table <- gene_table
     } else{
       tmp <- convert_region(ir_table = ir_table, l = l, region = "SSC",
                             genome = genome, gene_table = gene_table,
@@ -322,7 +331,6 @@ PlotPlasitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
     if (nrow(ir_table) == 1){
       warning("Didn't get IR region from thid species. ",
               "It's impossible to convert IRA region.")
-      gene_table <- gene_table
     } else{
       tmp <- convert_region(ir_table = ir_table, l = l, region = "IRA",
                             genome = genome, gene_table = gene_table,
@@ -928,7 +936,7 @@ PlotPlasitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                           col = ir_table$bg_col,
                                                           border = NA)
                                   }
-                                  if (!is.null(indel_table)){
+                                  if (!is.null(indel_table) & show.indel){
                                     circlize::circos.rect(xleft = indel_table$position - 10,
                                                           ybottom = 0,#circlize::convert_y(0, "mm"),
                                                           xright = indel_table$position + 10,
@@ -939,7 +947,7 @@ PlotPlasitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                             y = 0.05,
                                                             col = indel_table$col,
                                                             pch = 19,
-                                                            cex = 0.2 * text.size)
+                                                            cex = 0.5 * text.size)
                                     # circlize::circos.text(x = indel_table$position,
                                     #                         y = 0.5,
                                     #                         col = indel_table$col,
@@ -1009,7 +1017,7 @@ PlotPlasitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
       }
 
     }
-    if (!is.null(indel_table)) {
+    if (!is.null(indel_table) & show.indel) {
       pos_s=circlize::circlize(indel_table$position - 10,
                                1, sector.index = "chr1", track.index = 1)
       pos_e=circlize::circlize(indel_table$position + 10,

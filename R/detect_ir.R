@@ -1,4 +1,4 @@
-irDetect <- function(genome, seed.size = 100) {
+irDetect <- function(genome, seed.size = 1000) {
   tick = 0
 
   # Matching seeds to genome ------------------------------------------------
@@ -61,13 +61,19 @@ irDetect <- function(genome, seed.size = 100) {
     rbind.data.frame(dplyr::filter(df, group_diff != 0)) %>%
     dplyr::arrange(group_before)
 
-
   # get start and end points for IRA and IRB (1-base)
   if (sum(pos$start_diff < 0) > 0){
-    ira_s <- pos$group_before[1]
+    tmp <- pos[pos$start_diff < 0, ]
+    pos <- rbind.data.frame(pos, df[which(df$group_diff %in% tmp$group_diff) - 1, ],
+                            df[which(df$group_diff %in% tmp$group_diff) + 1, ]) %>%
+      dplyr::filter(start_diff >= 0) %>%
+      arrange(group_before)
+
+    mismatch_group <- which(pos$group_diff > 0)
+    ira_s <- pos$group_before[mismatch_group[1] - 1]
     ira_e <- pos$group_before[which.max(pos$group_diff)] + seed.size - 1
     irb_s <- l - pos$start_before[which.max(pos$group_diff)] - seed.size + 2
-    irb_e <- l - pos$start_before[1] + 1
+    irb_e <- pos$group_after[mismatch_group[length(mismatch_group)] + 1] + seed.size - 1
   } else {
     ira_s <- pos$group_before[1]
     ira_e <- pos$group_before[(nrow(pos)+1)/2] + seed.size - 1
@@ -183,7 +189,7 @@ map_genome <- function(genome, seed_starts, seed.size = 1000,
     }
   } else{
     seeds <- Biostrings::PDict(seeds)
-    m <- Biostrings::matchPDict(seeds, genome_rc)
+    m <- Biostrings::matchPDict(seeds, genome_rc, max.mismatch = )
     m <- as.data.frame(m)
   }
 
@@ -213,19 +219,20 @@ detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
                                               subject = Biostrings::reverseComplement(ira_seq))
   }
 
-
   ## insert table for IRA and delete table for IRB
 
   insert_table_a <- suppressWarnings(data.frame(Biostrings::insertion(ir_map_a)))
 
   if (nrow(insert_table_a) != 0){
 
-    insert_table_a$string <- as.character(Biostrings::DNAStringSet(ira_seq,
+    insert_table_a$string <- as.character(Biostrings::DNAStringSet(ir_map_a@pattern,
                       start = insert_table_a$start, end = insert_table_a$end))
-
+    n_skip <- letterFrequency(Biostrings::DNAStringSet(ir_map_a@pattern,
+                      start = rep(1, nrow(insert_table_a)), end = insert_table_a$start),
+                      letters = "-")
     insert_table_a <- insert_table_a %>%
-      dplyr::mutate(start = start + ira_s - 1) %>%
-      dplyr::mutate(end = end + ira_s - 1)
+      dplyr::mutate(start = start - n_skip + ira_s - 1) %>%
+      dplyr::mutate(end = end - n_skip + ira_s - 1)
 
     insert_a <- NULL
     for (i in 1:nrow(insert_table_a)){
@@ -254,12 +261,15 @@ detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
 
   if (nrow(insert_table_b) != 0) {
 
-    insert_table_b$string <- as.character(Biostrings::DNAStringSet(ira_seq,
+    insert_table_b$string <- as.character(Biostrings::DNAStringSet(ir_map_b@pattern,
                       start = insert_table_b$start, end = insert_table_b$end))
-
+    n_skip <- letterFrequency(Biostrings::DNAStringSet(ir_map_b@pattern,
+                              start = rep(1, nrow(insert_table_b)),
+                              end = insert_table_b$start),
+                              letters = "-")
     insert_table_b <- insert_table_b %>%
-      dplyr::mutate(start = start + irb_s - 1) %>%
-      dplyr::mutate(end = end + irb_s - 1)
+      dplyr::mutate(start = start - n_skip + irb_s - 1) %>%
+      dplyr::mutate(end = end - n_skip + irb_s - 1)
 
     insert_b <- NULL
     for (i in 1:nrow(insert_table_b)){
@@ -302,7 +312,11 @@ detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
   }
 
   if (nrow(replace_table_a) != 0) {
-    replace_table_ira <- data.frame(position = replace_table_a$PatternStart + ira_s - 1,
+    n_skip <- as.vector(letterFrequency(Biostrings::DNAStringSet(ir_map_a@pattern,
+                                           start = rep(1, nrow(replace_table_a)),
+                                           end = replace_table_a$PatternStart),
+                              letters = "-"))
+    replace_table_ira <- data.frame(position = replace_table_a$PatternStart - n_skip + ira_s - 1,
                                     string = replace_table_a$PatternSubstring,
                                     mismatch_type = rep("replace",
                                                         nrow(replace_table_a)),
@@ -319,12 +333,17 @@ detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
         tmp <- c(tmp, i)
       }
     }
+
     if (!is.null(tmp)){
       replace_table_b <- replace_table_b[!(1:nrow(replace_table_b) %in% tmp), ]
     }
 
+    n_skip <- as.vector(letterFrequency(Biostrings::DNAStringSet(ir_map_b@pattern,
+                                                       start = rep(1, nrow(replace_table_b)),
+                                                       end = replace_table_b$PatternStart),
+                              letters = "-"))
 
-    replace_table_irb <- data.frame(position = replace_table_b$PatternStart + irb_s - 1,
+    replace_table_irb <- data.frame(position = replace_table_b$PatternStart - n_skip + irb_s - 1,
                                     string = replace_table_b$PatternSubstring,
                                     mismatch_type = rep("replace",
                                                         nrow(replace_table_b)),
@@ -340,6 +359,9 @@ detect_mismatch <- function(ira_seq, irb_seq, ira_s, irb_s, other_letter){
                            list(insert_a, insert_b, delete_table_a,
                                 delete_table_b, replace_table_ira,
                                 replace_table_irb))
+  if (nrow(indel_table) == 0){
+    indel_table <- NULL
+  }
   return(indel_table)
 }
 
