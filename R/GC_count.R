@@ -1,14 +1,14 @@
 gc_count <- function(genome, view.width = 10){
   n <- Biostrings::nchar(genome)
-  genome <- c(genome, genome[1:view.width - 1])
+  genome <- c(genome, genome[1:view.width])
   count <- as.vector(Biostrings::letterFrequencyInSlidingView(genome,
                                                     letters = "GC",
                                                     view.width = view.width))
   total <- as.vector(Biostrings::letterFrequency(genome, letters = "GC"))/n
-  res <- data.frame(position = seq(1, n),
+  res <- data.frame(position = seq(1, n+1),
                     gc_count = count/view.width,
                     stringsAsFactors = FALSE)
-  res <- res[seq(1, n, by = view.width), ]
+  res <- res[c(seq(1, n, by = view.width), n), ]
   res <- list(gc_count_table = res, total_count = total)
   return(res)
 }

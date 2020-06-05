@@ -89,7 +89,8 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 
   for (i in gene_class){
     gene_table$class[which(grepl(as.character(i),
-                                gene_table$gene, perl = TRUE))] <- i
+                                gene_table$gene, perl = TRUE,
+                                ignore.case = TRUE))] <- i
   }
 
   # 3. GC count -------------------------------------------------------------
@@ -184,6 +185,8 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #' the genome will be shown in the center of the plot.
 #' @param trn.no A logical value. If it is \code{TRUE}, the number of tRNAs in
 #' the genome will be shown in the center of the plot.
+#' @param organelle A logical value. If it is \code{TRUE}, the organelle type of
+#' the genome will be shown in the center of the plot.
 #' @param psa.color An R color object. It indecates the color for genes of
 #' photosystem I
 #' @param psb.color An R color object. It indecates the color for genes of
@@ -264,6 +267,7 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                        ira.converse = FALSE, irb.converse = FALSE,
                        genome.length = TRUE, total.gc = TRUE, show.indel = TRUE,
                        gene.no = TRUE, rrn.no = TRUE,trn.no = TRUE,
+                       organelle_type = TRUE,
                        background = "grey90",gc.color = "grey30",
                        gc.background = "grey70", info.background = "black",
                        ir.color = "#2F3941", ssc.color = "#82B6E2",
@@ -388,7 +392,7 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
   }
 
   # colouring
-  color_table <- plasitGeneColor(psa.color = psa.color, psb.color = psb.color,
+  color_table <- plastidGeneColor(psa.color = psa.color, psb.color = psb.color,
                            pet.color = pet.color, atp.color = atp.color,
                            ndh.color = ndh.color, rbc.color = rbc.color,
                            rpo.color = rpo.color, rsp.color = rsp.color,
@@ -985,7 +989,13 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                         rou2 = 0,
                         col = info.background, border = NA)
 
-  graphics::text(0,0.05, sp_name, font=4, cex = 0.9 * text.size, col = info.color)
+  if (organelle_type){
+    graphics::text(0,0.10, sp_name, font=4, cex = 0.9 * text.size, col = info.color)
+    graphics::text(0,0.05, "Plastid Genome", font=4, cex = 0.9 * text.size, col = info.color)
+  } else{
+    graphics::text(0,0.05, sp_name, font=4, cex = 0.9 * text.size, col = info.color)
+  }
+
   ns <- c(paste(n_gene, "genes"), paste(n_rrn, "rRNAs"), paste(n_trn, "tRNAs"))[which(c(gene.no, rrn.no, trn.no))]
   text <- c(paste(ns, collapse = "; "), paste(prettyNum(l, big.mark = ","), "bp", " "),
             paste("GC:",round(gc_total, 2)*100,"%"))
@@ -1045,7 +1055,7 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                                     track.index =  track_index['gene']),
                                 rou2 = circlize::get.cell.meta.data("cell.bottom.radius",
                                                                     track.index = track_index['gc count']),
-                                col = "white",# Transparent("#FFFFFF", 0.9),
+                                col = Transparent("#FFFFFF", 0.5),
                                 border = NA)
         } else {
           circlize::draw.sector(pos_s[i, "theta"], pos_e[i, "theta"],
@@ -1054,7 +1064,7 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                                     track.index =  track_index['arrow']),
                                 rou2 = circlize::get.cell.meta.data("cell.bottom.radius",
                                                                     track.index = track_index['gc count']),
-                                col = "white",# Transparent("#FFFFFF", 0.9),
+                                col = Transparent("#FFFFFF", 0.9),
                                 border = NA)
         }
       }
@@ -1120,6 +1130,8 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 #' @param rrn.no A logical value. If it is \code{TRUE}, the number of rRNAs in
 #' the genome will be shown in the center of the plot.
 #' @param trn.no A logical value. If it is \code{TRUE}, the number of tRNAs in
+#' the genome will be shown in the center of the plot.
+#' @param organelle A logical value. If it is \code{TRUE}, the organelle type of
 #' the genome will be shown in the center of the plot.
 #' @param nad.color An R color string. It indecates the color for genes of
 #' complex I (NADH dehydrogenase)
@@ -1192,6 +1204,7 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                           gc.per.gene = TRUE, pseudo = TRUE, legend = TRUE,
                           genome.length = TRUE, total.gc = TRUE,
                           gene.no = TRUE, rrn.no = TRUE, trn.no = TRUE,
+                          organelle_type = TRUE,
                           background = "grey90", gc.color = "grey30",
                           gc.background = "grey70", info.background = "black",
                           nad.color = "#2A6332", sdh.color = "#4C8805",
@@ -1734,7 +1747,13 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                         rou2 = 0,
                         col = info.background, border = NA)
 
-  graphics::text(0,0.05, sp_name, font=4, cex = 0.9 * text.size, col = info.color)
+  if (organelle_type){
+    graphics::text(0,0.10, sp_name, font=4, cex = 0.9 * text.size, col = info.color)
+    graphics::text(0,0.05, "Plastid Genome", font=4, cex = 0.9 * text.size, col = info.color)
+  } else{
+    graphics::text(0,0.05, sp_name, font=4, cex = 0.9 * text.size, col = info.color)
+  }
+
   ns <- c(paste(n_gene, "genes"), paste(n_rrn, "rRNAs"), paste(n_trn, "tRNAs"))[which(c(gene.no, rrn.no, trn.no))]
   text <- c(paste(ns, collapse = "; "), paste(prettyNum(l, big.mark = ","), "bp", " "),
             paste("GC:",round(gc_total, 2)*100,"%"))
@@ -1754,8 +1773,9 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 
   # Add legend
   if (legend){
-    legend(x = -1.25, y = -0.6, legend = color_table$label, cex = 0.6 * text.size,
-           fill = color_table$col, box.col = rgb(255, 255, 255, alpha = 0, maxColorValue = 255))
+    legend(x = -1.2, y = -0.6, legend = color_table$label, cex = 0.6 * text.size,
+           fill = color_table$col, bg = rgb(255, 255, 255, alpha = 0, maxColorValue = 255),
+           box.col = rgb(255, 255, 255, alpha = 0, maxColorValue = 255))
   }
 
   if (save){

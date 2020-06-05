@@ -1,4 +1,4 @@
-plasitGeneColor <- function(psa.color = "#2A6332", psb.color = "#4C8805",
+plastidGeneColor <- function(psa.color = "#2A6332", psb.color = "#4C8805",
                       pet.color = "#7F992C", atp.color = "#9FBB3D",
                       ndh.color = "#FEEE50", rbc.color = "#4D9E3F",
                       rpo.color = "#AE2D29", rsp.color = "#D6AD7C",
