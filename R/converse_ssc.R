@@ -1,3 +1,4 @@
+
 convert_gene<- function(gene_table, region_start, region_end, l){
   res <- gene_table
   append_gene <- NULL
@@ -163,6 +164,34 @@ convert_gene<- function(gene_table, region_start, region_end, l){
   return(res)
 }
 
+convert_small_region <- function(gene_table, region_start, region_end, l){
+  res <- gene_table
+
+  for (i in 1:nrow(gene_table)) {
+    tmp <- res[i, c("start", "end")]
+    if (region_start < region_end){
+      if (!(all(tmp < region_start) | all(tmp > region_end))){
+        tmp <- region_start + region_end - tmp
+        tmp <- tmp[c(2, 1)]
+        res[i, c("start", "end")] <- tmp
+      }
+    } else {
+      if (!(all(tmp > region_end) & all(tmp < region_start))){
+        tmp <- region_start + region_end - tmp
+      tmp <- tmp[c(2, 1)]
+      tmp[tmp > l] <- tmp[tmp > l] - l
+      tmp[tmp < 0] <- l - tmp[tmp < 0]
+        if (tmp[1]>tmp[2]){
+          res[i, c("start", "end")] <- c(tmp[1], l + tmp[2])
+        } else{
+        res[i, c("start", "end")] <- tmp
+        }
+      }
+    }
+  }
+  return(res)
+}
+
 convert_point <- function(position, region_start, region_end){
     if (region_start < region_end){
       position[which(position >= region_start & position <= region_end)] <- region_start + region_end -
@@ -202,7 +231,7 @@ convert_region <- function(ir_table, l, region = "SSC", genome, gene_table,
   gc_count <- select(gc_count, chr, position, gc_count)
 
   if (!is.null(customize.ring3)){
-    customize.ring3 <- convert_gene(customize.ring3, region_start = region_start, region_end = region_end, l)
+    customize.ring3 <- convert_small_region(customize.ring3, region_start = region_start, region_end = region_end, l)
   }
   if (!is.null(customize.ring1)){
     customize.ring1$position <- convert_point(customize.ring1$position, region_start = region_start, region_end = region_end)

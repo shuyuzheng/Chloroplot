@@ -527,17 +527,16 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 
   # Track heights
   n_customize_ring <- sum(c(!is.null(customize.ring1), !is.null(customize.ring2), !is.null(customize.ring3)))
-  if (n_customize_ring == 2){
+  if (n_customize_ring == 1){
+    height[2] <- height[2]/1.5
+  } else if (n_customize_ring == 2) {
     height[2] <- height[2]/2
     height[3] <- height[3] * 0.7
-  } else if (n_customize_ring == 2) {
-    height[2] <- height[2]/1.5
   } else if (n_customize_ring == 3) {
     height[2] <- height[2]/2
     height[3] <- height[3] * 0.7
     height[1] <- height[1] *0.7
   }
-
 
   circlize::circos.clear()
   circlize::circos.par(start.degree = rotate,
@@ -990,10 +989,10 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                         col = info.background, border = NA)
 
   if (organelle_type){
-    graphics::text(0,0.10, sp_name, font=4, cex = 0.9 * text.size, col = info.color)
-    graphics::text(0,0.05, "Plastid Genome", font=4, cex = 0.9 * text.size, col = info.color)
+    graphics::text(0,0.10, sp_name, font=4, cex = 0.8 * text.size, col = info.color)
+    graphics::text(0,0.05, "Plastid Genome", font=4, cex = 0.8 * text.size, col = info.color)
   } else{
-    graphics::text(0,0.05, sp_name, font=4, cex = 0.9 * text.size, col = info.color)
+    graphics::text(0,0.05, sp_name, font=4, cex = 0.8 * text.size, col = info.color)
   }
 
   ns <- c(paste(n_gene, "genes"), paste(n_rrn, "rRNAs"), paste(n_trn, "tRNAs"))[which(c(gene.no, rrn.no, trn.no))]
@@ -1001,9 +1000,9 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
             paste("GC:",round(gc_total, 2)*100,"%"))
   j <- 1
   if (cu.bias){
-    cex = 0.8 * text.size
+    cex = 0.7 * text.size
   } else {
-    cex = 0.9 * text.size
+    cex = 0.8 * text.size
   }
   for (i in which(c((length(ns) != 0), genome.length, total.gc))) {
     graphics::text(0,0.05 - 0.05 * j, text[i],
@@ -1338,11 +1337,11 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 
   # Track heights
   n_customize_ring <- sum(c(!is.null(customize.ring1), !is.null(customize.ring2), !is.null(customize.ring3)))
-  if (n_customize_ring == 2){
+  if (n_customize_ring == 1){
+    height[2] <- height[2]/1.5
+  } else if (n_customize_ring == 2) {
     height[2] <- height[2]/2
     height[3] <- height[3] * 0.7
-  } else if (n_customize_ring == 2) {
-    height[2] <- height[2]/1.5
   } else if (n_customize_ring == 3) {
     height[2] <- height[2]/2
     height[3] <- height[3] * 0.7
@@ -1748,10 +1747,10 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                         col = info.background, border = NA)
 
   if (organelle_type){
-    graphics::text(0,0.10, sp_name, font=4, cex = 0.9 * text.size, col = info.color)
-    graphics::text(0,0.05, "Plastid Genome", font=4, cex = 0.9 * text.size, col = info.color)
+    graphics::text(0,0.10, sp_name, font=4, cex = 0.8 * text.size, col = info.color)
+    graphics::text(0,0.05, "Plastid Genome", font=4, cex = 0.8 * text.size, col = info.color)
   } else{
-    graphics::text(0,0.05, sp_name, font=4, cex = 0.9 * text.size, col = info.color)
+    graphics::text(0,0.05, sp_name, font=4, cex = 0.8 * text.size, col = info.color)
   }
 
   ns <- c(paste(n_gene, "genes"), paste(n_rrn, "rRNAs"), paste(n_trn, "tRNAs"))[which(c(gene.no, rrn.no, trn.no))]
@@ -1759,9 +1758,9 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
             paste("GC:",round(gc_total, 2)*100,"%"))
   j <- 1
   if (cu.bias){
-    cex = 0.8 * text.size
+    cex = 0.7 * text.size
   } else {
-    cex = 0.9 * text.size
+    cex = 0.8 * text.size
   }
   for (i in which(c((length(ns) != 0), genome.length, total.gc))) {
     graphics::text(0,0.05 - 0.05 * j, text[i],
