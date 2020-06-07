@@ -547,7 +547,13 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                      plotType = NULL)
 
   # 1.2. gene label outside
-  if (nrow(gene_table_r) != 0 ) {
+  if (nrow(gene_table_r) == 0 ) {
+    # Background
+    circlize::draw.sector(0, 360,
+                          rou1 = 1,
+                          rou2 = 0,
+                          col = background, border = NA)
+  } else {
     circlize::circos.genomicLabels(gene_table_r, labels = gene_table_r$gene_label,
                                    side = "outside",cex = 0.5 * text.size,
                                    connection_height = circlize::convert_height(3, "mm"),
@@ -562,7 +568,6 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                           rou2 = 0,
                           col = background, border = NA)
   }
-
 
 
 
@@ -1199,7 +1204,7 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 #' @export
 PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                           text.size = 1, height = c(0.1, 0.2, 0.07),
-                          file.name = NULL, shadow = TRUE, ir.gc = TRUE,
+                          file.name = NULL,
                           gc.per.gene = TRUE, pseudo = TRUE, legend = TRUE,
                           genome.length = TRUE, total.gc = TRUE,
                           gene.no = TRUE, rrn.no = TRUE, trn.no = TRUE,
@@ -1357,7 +1362,13 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                      plotType = NULL)
 
   # 1.2. gene label outside
-  if (nrow(gene_table_r) != 0 ) {
+  if (nrow(gene_table_r) == 0 ) {
+    # Background
+    circlize::draw.sector(0, 360,
+                          rou1 = 1,
+                          rou2 = 0,
+                          col = background, border = NA)
+  } else {
     circlize::circos.genomicLabels(gene_table_r, labels = gene_table_r$gene_label,
                                    side = "outside",cex = 0.5 * text.size,
                                    connection_height = circlize::convert_height(3, "mm"),
@@ -1372,7 +1383,6 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                           rou2 = 0,
                           col = background, border = NA)
   }
-
 
 
 
