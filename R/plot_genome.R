@@ -1199,7 +1199,7 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 #' @export
 PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                           text.size = 1, height = c(0.1, 0.2, 0.07),
-                          file.name = NULL, shadow = TRUE, ir.gc = TRUE,
+                          file.name = NULL, 
                           gc.per.gene = TRUE, pseudo = TRUE, legend = TRUE,
                           genome.length = TRUE, total.gc = TRUE,
                           gene.no = TRUE, rrn.no = TRUE, trn.no = TRUE,
