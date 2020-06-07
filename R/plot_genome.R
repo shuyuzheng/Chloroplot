@@ -1357,7 +1357,13 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                      plotType = NULL)
 
   # 1.2. gene label outside
-  if (nrow(gene_table_r) != 0 ) {
+  if (nrow(gene_table_r) == 0 ) {
+    # Background
+    circlize::draw.sector(0, 360,
+                          rou1 = 1,
+                          rou2 = 0,
+                          col = background, border = NA)
+  } else {
     circlize::circos.genomicLabels(gene_table_r, labels = gene_table_r$gene_label,
                                    side = "outside",cex = 0.5 * text.size,
                                    connection_height = circlize::convert_height(3, "mm"),
