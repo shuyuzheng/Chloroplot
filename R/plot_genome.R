@@ -1782,7 +1782,7 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 
   # Add legend
   if (legend){
-    legend(x = -1.2, y = -0.6, legend = color_table$label, cex = 0.6 * text.size,
+    legend(x = -1.25, y = -0.6, legend = color_table$label, cex = 0.6 * text.size,
            fill = color_table$col, bg = rgb(255, 255, 255, alpha = 0, maxColorValue = 255),
            box.col = rgb(255, 255, 255, alpha = 0, maxColorValue = 255))
   }
