@@ -26,6 +26,7 @@ PlotPlastidGenome(
   gene.no = TRUE,
   rrn.no = TRUE,
   trn.no = TRUE,
+  organelle_type = TRUE,
   background = "grey90",
   gc.color = "grey30",
   gc.background = "grey70",
@@ -56,9 +57,12 @@ PlotPlastidGenome(
   cu.bias = TRUE,
   customize.ring1 = NULL,
   customize.ring1.type = "line",
+  customize.ring1.color = gc.color,
   customize.ring2 = NULL,
   customize.ring2.type = "line",
-  customize.ring3 = NULL
+  customize.ring2.color = gc.color,
+  customize.ring3 = NULL,
+  customize.ring3.color = gc.color
 )
 }
 \arguments{
@@ -154,55 +158,55 @@ of LSC sectors.}
 \item{shadow.color}{An R color object. It indicates the color for the shadow
 casted from IR sectors.}
 
-\item{psa.color}{An R color object. It indecates the color for genes of
+\item{psa.color}{An R color object. It indicates the color for genes of
 photosystem I}
 
-\item{psb.color}{An R color object. It indecates the color for genes of
+\item{psb.color}{An R color object. It indicates the color for genes of
 photosystem II}
 
-\item{pet.color}{An R color object. It indecates the color for genes of
+\item{pet.color}{An R color object. It indicates the color for genes of
 cytochrome b/f complex}
 
-\item{atp.color}{An R color object. It indecates the color for genes of
+\item{atp.color}{An R color object. It indicates the color for genes of
 ATP synthesis}
 
-\item{ndh.color}{An R color object. It indecates the color for genes of
+\item{ndh.color}{An R color object. It indicates the color for genes of
 NADH dehydrogenase}
 
-\item{rbc.color}{An R color object. It indecates the color for genes of
+\item{rbc.color}{An R color object. It indicates the color for genes of
 RubisCO larg subunit}
 
-\item{rpo.color}{An R color object. It indecates the color for genes of
+\item{rpo.color}{An R color object. It indicates the color for genes of
 RNA polymerase}
 
-\item{rsp.color}{An R color object. It indecates the color for genes of
+\item{rsp.color}{An R color object. It indicates the color for genes of
 small ribosomal protein}
 
-\item{rpl.color}{An R color object. It indecates the color for genes of
+\item{rpl.color}{An R color object. It indicates the color for genes of
 large ribosomal protein}
 
-\item{clp_mat_inf.color}{An R color object. It indecates the color for genes
+\item{clp_mat_inf.color}{An R color object. It indicates the color for genes
 of clpP, matK, or infA}
 
-\item{ycf.color}{An R color object. It indecates the color for genes of
+\item{ycf.color}{An R color object. It indicates the color for genes of
 hypothetical reading frame}
 
-\item{trn.color}{An R color object. It indecates the color for genes of
+\item{trn.color}{An R color object. It indicates the color for genes of
 transfer RNA}
 
-\item{rrn.color}{An R color object. It indecates the color for genes of
+\item{rrn.color}{An R color object. It indicates the color for genes of
 ribosomal RNA}
 
-\item{other_gene.color}{An R color object. It indecates the color for other
+\item{other_gene.color}{An R color object. It indicates the color for other
 genes}
 
-\item{gene_axis_ir.color}{An R color object. It indecates the color for other
+\item{gene_axis_ir.color}{An R color object. It indicates the color for other
 genes.}
 
-\item{gene_axis_ssc.color}{An R color object. It indecates the color for other
+\item{gene_axis_ssc.color}{An R color object. It indicates the color for other
 genes.}
 
-\item{gene_axis_lsc.color}{An R color object. It indecates the color for other
+\item{gene_axis_lsc.color}{An R color object. It indicates the color for other
 genes.}
 
 \item{cu.bias}{A logical value. If it is \code{TRUE}, the condon usage bias
@@ -220,6 +224,9 @@ You can find more details in the reference paper.}
 customize.ring1. Avaliable values are "line", "line + filling", "line + dot",
 "line + dot + filling", "step line", "step line + filling", "vertical line"}
 
+\item{customize.ring1.color}{An R color object. It indicates the color for
+the plots in customized ring 1.}
+
 \item{customize.ring2}{A data frame. It must contain 2 columns:
 \itemize{
   \item \strong{position}: 1-base genomic coordinate for the features.
@@ -230,6 +237,9 @@ customize.ring1. Avaliable values are "line", "line + filling", "line + dot",
 customize.ring2. Avaliable values are "line", "line + filling", "line + dot",
 "line + dot + filling", "step line", "step line + filling", "vertical line"}
 
+\item{customize.ring2.color}{An R color object. It indicates the color for
+the plots in customized ring 2.}
+
 \item{customize.ring3}{A data frame. It must contain 2 columns:
 \itemize{
   \item \strong{start}: 1-base genomic coordinate for the start point of the
@@ -238,6 +248,12 @@ customize.ring2. Avaliable values are "line", "line + filling", "line + dot",
   features.
   \item \strong{value}: the values for the features.
 }}
+
+\item{customize.ring3.color}{An R color object. It indicates the color for
+the plots in customized ring 3.}
+
+\item{organelle}{A logical value. If it is \code{TRUE}, the organelle type of
+the genome will be shown in the center of the plot.}
 
 \item{show.gene}{A vector of characters. It indicates which classes of genes
 will be shown on the plot. A valiable values are "psa","psb","pet","atp",

@@ -187,42 +187,42 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #' the genome will be shown in the center of the plot.
 #' @param organelle A logical value. If it is \code{TRUE}, the organelle type of
 #' the genome will be shown in the center of the plot.
-#' @param psa.color An R color object. It indecates the color for genes of
+#' @param psa.color An R color object. It indicates the color for genes of
 #' photosystem I
-#' @param psb.color An R color object. It indecates the color for genes of
+#' @param psb.color An R color object. It indicates the color for genes of
 #' photosystem II
-#' @param pet.color An R color object. It indecates the color for genes of
+#' @param pet.color An R color object. It indicates the color for genes of
 #' cytochrome b/f complex
-#' @param atp.color An R color object. It indecates the color for genes of
+#' @param atp.color An R color object. It indicates the color for genes of
 #' ATP synthesis
-#' @param ndh.color An R color object. It indecates the color for genes of
+#' @param ndh.color An R color object. It indicates the color for genes of
 #' NADH dehydrogenase
-#' @param rbc.color An R color object. It indecates the color for genes of
+#' @param rbc.color An R color object. It indicates the color for genes of
 #' RubisCO larg subunit
-#' @param rpo.color An R color object. It indecates the color for genes of
+#' @param rpo.color An R color object. It indicates the color for genes of
 #' RNA polymerase
-#' @param rsp.color An R color object. It indecates the color for genes of
+#' @param rsp.color An R color object. It indicates the color for genes of
 #' small ribosomal protein
-#' @param rpl.color An R color object. It indecates the color for genes of
+#' @param rpl.color An R color object. It indicates the color for genes of
 #' large ribosomal protein
-#' @param clp_mat_inf.color An R color object. It indecates the color for genes
+#' @param clp_mat_inf.color An R color object. It indicates the color for genes
 #' of clpP, matK, or infA
-#' @param ycf.color An R color object. It indecates the color for genes of
+#' @param ycf.color An R color object. It indicates the color for genes of
 #' hypothetical reading frame
-#' @param trn.color An R color object. It indecates the color for genes of
+#' @param trn.color An R color object. It indicates the color for genes of
 #' transfer RNA
-#' @param rrn.color An R color object. It indecates the color for genes of
+#' @param rrn.color An R color object. It indicates the color for genes of
 #' ribosomal RNA
-#' @param other_gene.color An R color object. It indecates the color for other
+#' @param other_gene.color An R color object. It indicates the color for other
 #' genes
 #' @param show.gene A vector of characters. It indicates which classes of genes
 #' will be shown on the plot. A valiable values are "psa","psb","pet","atp",
 #' "ndh","rbc", "rpo","rps","rpl", "clp|mat|inf","ycf", "trn","rrn", "OTHER"
-#' @param gene_axis_ir.color An R color object. It indecates the color for other
+#' @param gene_axis_ir.color An R color object. It indicates the color for other
 #' genes.
-#' @param gene_axis_lsc.color An R color object. It indecates the color for other
+#' @param gene_axis_lsc.color An R color object. It indicates the color for other
 #' genes.
-#' @param gene_axis_ssc.color An R color object. It indecates the color for other
+#' @param gene_axis_ssc.color An R color object. It indicates the color for other
 #' genes.
 #' @param customize.ring1 A data frame. It must contain 2 columns:
 #' \itemize{
@@ -233,6 +233,8 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #' @param customize.ring1.type A charactor. It indicate the plot type in
 #' customize.ring1. Avaliable values are "line", "line + filling", "line + dot",
 #' "line + dot + filling", "step line", "step line + filling", "vertical line"
+#' @param customize.ring1.color An R color object. It indicates the color for
+#' the plots in customized ring 1.
 #' @param customize.ring2 A data frame. It must contain 2 columns:
 #' \itemize{
 #'   \item \strong{position}: 1-base genomic coordinate for the features.
@@ -241,6 +243,8 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #' @param customize.ring2.type A charactor. It indicate the plot type in
 #' customize.ring2. Avaliable values are "line", "line + filling", "line + dot",
 #' "line + dot + filling", "step line", "step line + filling", "vertical line"
+#' @param customize.ring2.color An R color object. It indicates the color for
+#' the plots in customized ring 2.
 #' @param customize.ring3 A data frame. It must contain 2 columns:
 #' \itemize{
 #'   \item \strong{start}: 1-base genomic coordinate for the start point of the
@@ -249,6 +253,8 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 #'   features.
 #'   \item \strong{value}: the values for the features.
 #' }
+#' @param customize.ring3.color An R color object. It indicates the color for
+#' the plots in customized ring 3.
 #' @return  A plot for chloroplast genome.
 #'
 #' @references Supek, Fran, and Kristian Vlahovicek. “Comparison of codon usage
@@ -783,7 +789,8 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                            panel.fun = function(x, y) {
                              circlize::circos.lines(x, y, type = style$type,
                                                     area = style$area,
-                                                    baseline = 0, pt.col = bar_color,
+                                                    baseline = 0,
+                                                    pch = 1,
                                                     cex = 0.2 * text.size,
                                                     col = style$col,
                                                     lwd = style$lwd)
@@ -827,7 +834,8 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                            panel.fun = function(x, y) {
                              circlize::circos.lines(x, y, type = style$type,
                                                     area = style$area,
-                                                    baseline = 0, pt.col = bar_color,
+                                                    baseline = 0,
+                                                    pch = 1,
                                                     cex = 0.2 * text.size,
                                                     col = style$col,
                                                     lwd = style$lwd)
@@ -1140,32 +1148,32 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 #' the genome will be shown in the center of the plot.
 #' @param organelle A logical value. If it is \code{TRUE}, the organelle type of
 #' the genome will be shown in the center of the plot.
-#' @param nad.color An R color string. It indecates the color for genes of
+#' @param nad.color An R color string. It indicates the color for genes of
 #' complex I (NADH dehydrogenase)
-#' @param sdh.color An R color string. It indecates the color for genes of
+#' @param sdh.color An R color string. It indicates the color for genes of
 #' complex II (succinate dehydrogenase)
-#' @param cob.color An R color string. It indecates the color for genes of
+#' @param cob.color An R color string. It indicates the color for genes of
 #' complex III (ubichinol cytochrome reductase)
-#' @param cox.color An R color string. It indecates the color for genes of
+#' @param cox.color An R color string. It indicates the color for genes of
 #' complex IV (cytochrome c oxidase)
-#' @param atp.color An R color string. It indecates the color for genes of
+#' @param atp.color An R color string. It indicates the color for genes of
 #' ATP synthase
-#' @param ccmF.color An R color string. It indecates the color for genes of
+#' @param ccmF.color An R color string. It indicates the color for genes of
 #' cytochrome c biogenesi
-#' @param mmt.color An R color string. It indecates the color for genes of
+#' @param mmt.color An R color string. It indicates the color for genes of
 #' transport membrane protein
-#' @param rps.color An R color string. It indecates the color for genes of
+#' @param rps.color An R color string. It indicates the color for genes of
 #' ribosomal proteins (SSU)
-#' @param rpl.color An R color string. It indecates the color for genes of
+#' @param rpl.color An R color string. It indicates the color for genes of
 #' ribosomal proteins (LSU)
-#' @param mat.color An R color string. It indecates the color for genes of
+#' @param mat.color An R color string. It indicates the color for genes of
 #' maturases
-#' @param orf.color An R color string. It indecates the color for ORFs
-#' @param trn.color An R color object. It indecates the color for genes of
+#' @param orf.color An R color string. It indicates the color for ORFs
+#' @param trn.color An R color object. It indicates the color for genes of
 #' transfer RNA
-#' @param rrn.color An R color object. It indecates the color for genes of
+#' @param rrn.color An R color object. It indicates the color for genes of
 #' ribosomal RNA
-#' @param other_gene.color An R color object. It indecates the color for other
+#' @param other_gene.color An R color object. It indicates the color for other
 #' genes
 #' @param show.gene A vector of characters. It indicates which classes of genes
 #' will be shown on the plot. Avaliable values are "nad|nd","sdh","cob",
@@ -1179,6 +1187,8 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 #' @param customize.ring1.type A charactor. It indicate the plot type in
 #' customize.ring1. Avaliable values are "line", "line + filling", "line + dot",
 #' "line + dot + filling", "step line", "step line + filling", "vertical line"
+#' @param customize.ring1.color An R color object. It indicates the color for
+#' the plots in customized ring 1.
 #' @param customize.ring2 A data frame. It must contain 2 columns:
 #' \itemize{
 #'   \item \strong{position}: 1-base genomic coordinate for the features.
@@ -1187,6 +1197,8 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 #' @param customize.ring2.type A charactor. It indicate the plot type in
 #' customize.ring2. Avaliable values are "line", "line + filling", "line + dot",
 #' "line + dot + filling", "step line", "step line + filling", "vertical line"
+#' @param customize.ring2.color An R color object. It indicates the color for
+#' the plots in customized ring 2.
 #' @param customize.ring3 A data frame. It must contain 2 columns:
 #' \itemize{
 #'   \item \strong{start}: 1-base genomic coordinate for the start point of the
@@ -1195,6 +1207,8 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 #'   features.
 #'   \item \strong{value}: the values for the features.
 #' }
+#' @param customize.ring3.color An R color object. It indicates the color for
+#' the plots in customized ring 3.
 #' @return  A plot for chloroplast genome.
 #'
 #' @references Supek, Fran, and Kristian Vlahovicek. “Comparison of codon usage
@@ -1598,7 +1612,8 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                            panel.fun = function(x, y) {
                              circlize::circos.lines(x, y, type = style$type,
                                                     area = style$area,
-                                                    baseline = 0, pt.col = bar_color,
+                                                    baseline = 0,
+                                                    pch = 1,
                                                     cex = 0.2 * text.size,
                                                     col = style$col,
                                                     lwd = style$lwd)
@@ -1642,7 +1657,8 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                            panel.fun = function(x, y) {
                              circlize::circos.lines(x, y, type = style$type,
                                                     area = style$area,
-                                                    baseline = 0, pt.col = bar_color,
+                                                    baseline = 0,
+                                                    pch = 1,
                                                     cex = 0.2 * text.size,
                                                     col = style$col,
                                                     lwd = style$lwd)

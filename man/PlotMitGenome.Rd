@@ -11,8 +11,6 @@ PlotMitGenome(
   text.size = 1,
   height = c(0.1, 0.2, 0.07),
   file.name = NULL,
-  shadow = TRUE,
-  ir.gc = TRUE,
   gc.per.gene = TRUE,
   pseudo = TRUE,
   legend = TRUE,
@@ -21,6 +19,7 @@ PlotMitGenome(
   gene.no = TRUE,
   rrn.no = TRUE,
   trn.no = TRUE,
+  organelle_type = TRUE,
   background = "grey90",
   gc.color = "grey30",
   gc.background = "grey70",
@@ -109,45 +108,45 @@ of gc count plot area.}
 \item{info.background}{An R color object. It indicates the color for the background
 of central area where species' information was shown.}
 
-\item{nad.color}{An R color string. It indecates the color for genes of
+\item{nad.color}{An R color string. It indicates the color for genes of
 complex I (NADH dehydrogenase)}
 
-\item{sdh.color}{An R color string. It indecates the color for genes of
+\item{sdh.color}{An R color string. It indicates the color for genes of
 complex II (succinate dehydrogenase)}
 
-\item{cob.color}{An R color string. It indecates the color for genes of
+\item{cob.color}{An R color string. It indicates the color for genes of
 complex III (ubichinol cytochrome reductase)}
 
-\item{cox.color}{An R color string. It indecates the color for genes of
+\item{cox.color}{An R color string. It indicates the color for genes of
 complex IV (cytochrome c oxidase)}
 
-\item{atp.color}{An R color string. It indecates the color for genes of
+\item{atp.color}{An R color string. It indicates the color for genes of
 ATP synthase}
 
-\item{ccmF.color}{An R color string. It indecates the color for genes of
+\item{ccmF.color}{An R color string. It indicates the color for genes of
 cytochrome c biogenesi}
 
-\item{mmt.color}{An R color string. It indecates the color for genes of
+\item{mmt.color}{An R color string. It indicates the color for genes of
 transport membrane protein}
 
-\item{rps.color}{An R color string. It indecates the color for genes of
+\item{rps.color}{An R color string. It indicates the color for genes of
 ribosomal proteins (SSU)}
 
-\item{rpl.color}{An R color string. It indecates the color for genes of
+\item{rpl.color}{An R color string. It indicates the color for genes of
 ribosomal proteins (LSU)}
 
-\item{mat.color}{An R color string. It indecates the color for genes of
+\item{mat.color}{An R color string. It indicates the color for genes of
 maturases}
 
-\item{orf.color}{An R color string. It indecates the color for ORFs}
+\item{orf.color}{An R color string. It indicates the color for ORFs}
 
-\item{trn.color}{An R color object. It indecates the color for genes of
+\item{trn.color}{An R color object. It indicates the color for genes of
 transfer RNA}
 
-\item{rrn.color}{An R color object. It indecates the color for genes of
+\item{rrn.color}{An R color object. It indicates the color for genes of
 ribosomal RNA}
 
-\item{other_gene.color}{An R color object. It indecates the color for other
+\item{other_gene.color}{An R color object. It indicates the color for other
 genes}
 
 \item{cu.bias}{A logical value. If it is \code{TRUE}, the condon usage bias
@@ -184,9 +183,21 @@ customize.ring2. Avaliable values are "line", "line + filling", "line + dot",
   \item \strong{value}: the values for the features.
 }}
 
+\item{organelle}{A logical value. If it is \code{TRUE}, the organelle type of
+the genome will be shown in the center of the plot.}
+
 \item{show.gene}{A vector of characters. It indicates which classes of genes
 will be shown on the plot. Avaliable values are "nad|nd","sdh","cob",
 "cox|cytb","atp", "ccmF","mtt","rps","rpl", "mat","orf","trn","rrn", "OTHER"}
+
+\item{customize.ring1.color}{An R color object. It indicates the color for
+the plots in customized ring 1.}
+
+\item{customize.ring2.color}{An R color object. It indicates the color for
+the plots in customized ring 2.}
+
+\item{customize.ring3.color}{An R color object. It indicates the color for
+the plots in customized ring 3.}
 }
 \value{
 A plot for chloroplast genome.
