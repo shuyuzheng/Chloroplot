@@ -1184,26 +1184,26 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
 #'   \item \strong{value}: the values for the features.
 #' }
 #'
-#' @param customize.ring1.type A charactor. It indicate the plot type in
-#' customize.ring1. Avaliable values are "line", "line + filling", "line + dot",
+#' @param customize.ring1.type A character. It indicate the plot type in
+#' customize.ring1. Available values are "line", "line + filling", "line + dot",
 #' "line + dot + filling", "step line", "step line + filling", "vertical line"
 #' @param customize.ring1.color An R color object. It indicates the color for
 #' the plots in customized ring 1.
 #' @param customize.ring2 A data frame. It must contain 2 columns:
 #' \itemize{
-#'   \item \strong{position}: 1-base genomic coordinate for the features.
+#'   \item \strong{position}: 1-base genome coordinate for the features.
 #'   \item \strong{value}: the values for the features.
 #' }
-#' @param customize.ring2.type A charactor. It indicate the plot type in
-#' customize.ring2. Avaliable values are "line", "line + filling", "line + dot",
+#' @param customize.ring2.type A character. It indicate the plot type in
+#' customize.ring2. Available values are "line", "line + filling", "line + dot",
 #' "line + dot + filling", "step line", "step line + filling", "vertical line"
 #' @param customize.ring2.color An R color object. It indicates the color for
 #' the plots in customized ring 2.
 #' @param customize.ring3 A data frame. It must contain 2 columns:
 #' \itemize{
-#'   \item \strong{start}: 1-base genomic coordinate for the start point of the
+#'   \item \strong{start}: 1-base genome coordinate for the start point of the
 #'   features.
-#'   \item \strong{end}: 1-base genomic coordinate for the end point of the
+#'   \item \strong{end}: 1-base genome coordinate for the end point of the
 #'   features.
 #'   \item \strong{value}: the values for the features.
 #' }
@@ -1239,10 +1239,13 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                          "ccmF","mtt","rps","rpl",
                                          "mat","orf","trn","rrn", "OTHER"),
                           cu.bias = TRUE, customize.ring1 = NULL,
+                          customize.ring1.color = "grey30",
                           customize.ring1.type = "line",
+                          customize.ring2.color = "grey30",
                           customize.ring2 = NULL,
                           customize.ring2.type = "line",
-                          customize.ring3 = NULL){
+                          customize.ring3 = NULL,
+                          customize.ring3.color = "grey30"){
 
   # Unpack plot.table
   genome <- plot.tables$genome
@@ -1588,19 +1591,19 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
     bar_color <- ifelse(customize.ring1$value > 0, "orangered3", "steelblue")
     if (min(customize.ring1$value) > 0) {
       ylim[1] <- 0
-      bar_color <- rep(gc.color, nrow(customize.ring1))
+      bar_color <- rep(customize.ring1.color, nrow(customize.ring1))
     }
     if (max(customize.ring1$value) < 0){
       ylim[2] <- 0
-      bar_color <- rep(gc.color, nrow(customize.ring1))
+      bar_color <- rep(customize.ring1.color, nrow(customize.ring1))
     }
     style <- switch(customize.ring1.type,
-                    "line" = list(type = "l", arear = FALSE, col = gc.color, lwd = 0.5),
-                    "line + filling" = list(type = "l", arear = TRUE, col = gc.color, lwd = 0.01),
+                    "line" = list(type = "l", arear = FALSE, col = customize.ring1.color, lwd = 0.5),
+                    "line + filling" = list(type = "l", arear = TRUE, col = customize.ring1.color, lwd = 0.01),
                     "line + dot" = list(type = "o", arear = FALSE, col = bar_color, lwd = 0.5),
                     "line + dot + filling" = list(type = "o", arear = TRUE, col = bar_color, lwd = 0.01),
-                    "step line" = list(type = "s", arear = FALSE, col = gc.color, lwd = 0.5),
-                    "step line + filling" = list(type = "s", arear = TRUE, col = gc.color, lwd = 0.01),
+                    "step line" = list(type = "s", arear = FALSE, col = customize.ring1.color, lwd = 0.5),
+                    "step line + filling" = list(type = "s", arear = TRUE, col = customize.ring1.color, lwd = 0.01),
                     "vertical line" = list(type = "h", arear = FALSE, col = bar_color, lwd = 0.5))
 
     circlize::circos.track(factors =as.factor(customize.ring1$chr),
@@ -1620,7 +1623,7 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                              circlize::circos.segments(x0=0, x1=l, y0=0,
                                                        y1=0, lwd=0.5,
                                                        lty="16",
-                                                       col=darken(gc.color, 0.7))
+                                                       col=darken(customize.ring1.color, 0.7))
                            })
 
   }
@@ -1633,19 +1636,19 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
     bar_color <- ifelse(customize.ring2$value > 0, "orangered3", "steelblue")
     if (min(customize.ring2$value) > 0) {
       ylim[1] <- 0
-      bar_color <- rep(gc.color, nrow(customize.ring2))
+      bar_color <- rep(customize.ring2.color, nrow(customize.ring2))
     }
     if (max(customize.ring2$value) < 0){
       ylim[2] <- 0
-      bar_color <- rep(gc.color, nrow(customize.ring2))
+      bar_color <- rep(customize.ring2.color, nrow(customize.ring2))
     }
     style <- switch(customize.ring2.type,
-                    "line" = list(type = "l", arear = FALSE, col = gc.color, lwd = 0.5),
-                    "line + filling" = list(type = "l", arear = TRUE, col = gc.color, lwd = 0.01),
+                    "line" = list(type = "l", arear = FALSE, col = customize.ring2.color, lwd = 0.5),
+                    "line + filling" = list(type = "l", arear = TRUE, col = customize.ring2.color, lwd = 0.01),
                     "line + dot" = list(type = "o", arear = FALSE, col = bar_color, lwd = 0.5),
                     "line + dot + filling" = list(type = "o", arear = TRUE, col = bar_color, lwd = 0.01),
-                    "step line" = list(type = "s", arear = FALSE, col = gc.color, lwd = 0.5),
-                    "step line + filling" = list(type = "s", arear = TRUE, col = gc.color, lwd = 0.01),
+                    "step line" = list(type = "s", arear = FALSE, col = customize.ring2.color, lwd = 0.5),
+                    "step line + filling" = list(type = "s", arear = TRUE, col = customize.ring2.color, lwd = 0.01),
                     "vertical line" = list(type = "h", arear = FALSE, col = bar_color, lwd = 0.5))
 
     circlize::circos.track(factors =as.factor(customize.ring2$chr),
@@ -1665,7 +1668,7 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                              circlize::circos.segments(x0=0, x1=l, y0=0,
                                                        y1=0, lwd=0.5,
                                                        lty="16",
-                                                       col=darken(gc.color, 0.7))
+                                                       col=darken(customize.ring2.color, 0.7))
                            })
 
   }
@@ -1707,14 +1710,14 @@ PlotMitGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
                                                      xright = customize.ring3$end,
                                                      ybottom = customize.ring3$value,
                                                      ytop = 0,
-                                                     col = gc.color,
+                                                     col = customize.ring3.color,
                                                      border = NA)
                              } else {
                                circlize::circos.rect(xleft = customize.ring3$start,
                                                      xright = customize.ring3$end,
                                                      ybottom = 0,
                                                      ytop = customize.ring3$value,
-                                                     col = gc.color,
+                                                     col = customize.ring3.color,
                                                      border = NA)
                              }
                            })

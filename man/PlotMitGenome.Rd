@@ -42,10 +42,13 @@ PlotMitGenome(
     "rpl", "mat", "orf", "trn", "rrn", "OTHER"),
   cu.bias = TRUE,
   customize.ring1 = NULL,
+  customize.ring1.color = "grey30",
   customize.ring1.type = "line",
+  customize.ring2.color = "grey30",
   customize.ring2 = NULL,
   customize.ring2.type = "line",
-  customize.ring3 = NULL
+  customize.ring3 = NULL,
+  customize.ring3.color = "grey30"
 )
 }
 \arguments{
@@ -160,28 +163,37 @@ You can find more details in the reference paper.}
   \item \strong{value}: the values for the features.
 }}
 
-\item{customize.ring1.type}{A charactor. It indicate the plot type in
-customize.ring1. Avaliable values are "line", "line + filling", "line + dot",
+\item{customize.ring1.color}{An R color object. It indicates the color for
+the plots in customized ring 1.}
+
+\item{customize.ring1.type}{A character. It indicate the plot type in
+customize.ring1. Available values are "line", "line + filling", "line + dot",
 "line + dot + filling", "step line", "step line + filling", "vertical line"}
+
+\item{customize.ring2.color}{An R color object. It indicates the color for
+the plots in customized ring 2.}
 
 \item{customize.ring2}{A data frame. It must contain 2 columns:
 \itemize{
-  \item \strong{position}: 1-base genomic coordinate for the features.
+  \item \strong{position}: 1-base genome coordinate for the features.
   \item \strong{value}: the values for the features.
 }}
 
-\item{customize.ring2.type}{A charactor. It indicate the plot type in
-customize.ring2. Avaliable values are "line", "line + filling", "line + dot",
+\item{customize.ring2.type}{A character. It indicate the plot type in
+customize.ring2. Available values are "line", "line + filling", "line + dot",
 "line + dot + filling", "step line", "step line + filling", "vertical line"}
 
 \item{customize.ring3}{A data frame. It must contain 2 columns:
 \itemize{
-  \item \strong{start}: 1-base genomic coordinate for the start point of the
+  \item \strong{start}: 1-base genome coordinate for the start point of the
   features.
-  \item \strong{end}: 1-base genomic coordinate for the end point of the
+  \item \strong{end}: 1-base genome coordinate for the end point of the
   features.
   \item \strong{value}: the values for the features.
 }}
+
+\item{customize.ring3.color}{An R color object. It indicates the color for
+the plots in customized ring 3.}
 
 \item{organelle}{A logical value. If it is \code{TRUE}, the organelle type of
 the genome will be shown in the center of the plot.}
@@ -189,15 +201,6 @@ the genome will be shown in the center of the plot.}
 \item{show.gene}{A vector of characters. It indicates which classes of genes
 will be shown on the plot. Avaliable values are "nad|nd","sdh","cob",
 "cox|cytb","atp", "ccmF","mtt","rps","rpl", "mat","orf","trn","rrn", "OTHER"}
-
-\item{customize.ring1.color}{An R color object. It indicates the color for
-the plots in customized ring 1.}
-
-\item{customize.ring2.color}{An R color object. It indicates the color for
-the plots in customized ring 2.}
-
-\item{customize.ring3.color}{An R color object. It indicates the color for
-the plots in customized ring 3.}
 }
 \value{
 A plot for chloroplast genome.
