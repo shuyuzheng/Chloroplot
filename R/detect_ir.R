@@ -36,7 +36,7 @@ irDetect <- function(genome, seed.size = 1000) {
   }
 
   # if IRB cover genome end point, shift the genome sequence forward with seed.size
-  while(m$group[nrow(m)] == l){
+  while(m$group[nrow(m)] + seed.size == l){
     tick <- tick - seed.size
     genome <- c(genome[(- tick + 1):l], genome[1: -tick])
     m <- map_genome(genome, seed_starts = seed_starts, seed.size = seed.size,
@@ -73,7 +73,7 @@ irDetect <- function(genome, seed.size = 1000) {
     ira_s <- pos$group_before[mismatch_group[1] - 1]
     ira_e <- pos$group_before[which.max(pos$group_diff)] + seed.size - 1
     irb_s <- l - pos$start_before[which.max(pos$group_diff)] - seed.size + 2
-    irb_e <- pos$group_after[mismatch_group[length(mismatch_group)] + 1] + seed.size - 1
+    irb_e <- pos$group_after[mismatch_group[length(mismatch_group)] + 1] + seed.size
   } else {
     ira_s <- pos$group_before[1]
     ira_e <- pos$group_before[(nrow(pos)+1)/2] + seed.size - 1
@@ -110,7 +110,8 @@ irDetect <- function(genome, seed.size = 1000) {
   # recover original coordinates (0-base)
   if (tick == 0) {
     ir_table <- data.frame(chr = rep("chr1", 5),
-                           start = c(0, ira_s, ira_e, irb_s, irb_e),
+                           start = c(1, ira_s, ira_e, irb_s, irb_e) -1, # -1 for
+                           # all start points to transfer 1-base coordinate to 0-base
                            end = c(ira_s, ira_e, irb_s, irb_e, l),
                            name = c("LSC", "IRA", "SSC", "IRB", "LSC"),
                            text = c(paste("LSC:", lsc_len),
@@ -120,36 +121,70 @@ irDetect <- function(genome, seed.size = 1000) {
                                     ""),
                            stringsAsFactors = FALSE)
   } else if (tick > 0) {
-    ir_table <- data.frame(chr = rep ("chr1", 5),
-                           start = c(0, ira_e - tick, irb_s - tick,
-                                     irb_e - tick, l-(tick - ira_s)),
-                           end = c(ira_e - tick, irb_s - tick,
-                                   irb_e - tick, l-(tick - ira_s), l),
-                           name = c("IRA", "SSC", "IRB", "LSC", "IRA"),
-                           text = c(paste("IRA:", ira_len),
-                                   paste("SSC:", ssc_len),
-                                   paste("IRB:", irb_len),
-                                   paste("LSC:", lsc_len),
-                                   ""),
-                           stringsAsFactors = FALSE)
+    if ((ira_e - tick) == 0){
+      ir_table <- data.frame(chr = rep("chr1", 4),
+                             start = c(1, irb_s - tick, irb_e - tick,
+                                       l-(tick - ira_s)) - 1, # -1 for
+                             # all start points to transfer 1-base coordinate to 0-base
+                             end = c(irb_s - tick, irb_e - tick,
+                                     l-(tick - ira_s), l),
+                             name = c("IRA", "SSC", "IRB", "LSC"),
+                             text = c(paste("IRA:", ira_len),
+                                      paste("SSC:", ssc_len),
+                                      paste("IRB:", irb_len),
+                                      paste("LSC:", lsc_len)),
+                             stringsAsFactors = FALSE)
+    } else {
+      ir_table <- data.frame(chr = rep ("chr1", 5),
+                             start = c(1, ira_e - tick, irb_s - tick,
+                                       irb_e - tick, l-(tick - ira_s)) - 1, # -1 for
+                             # all start points to transfer 1-base coordinate to 0-base
+                             end = c(ira_e - tick, irb_s - tick,
+                                     irb_e - tick, l-(tick - ira_s), l),
+                             name = c("IRA", "SSC", "IRB", "LSC", "IRA"),
+                             text = c(paste("IRA:", ira_len),
+                                      paste("SSC:", ssc_len),
+                                      paste("IRB:", irb_len),
+                                      paste("LSC:", lsc_len),
+                                      ""),
+                             stringsAsFactors = FALSE)
+    }
   } else if (tick < 0) {
-    ir_table <- data.frame(chr = rep ("chr1", 5),
-                           start = c(0, (irb_e - tick - l), ira_s - tick,
-                                     ira_e - tick, irb_s - tick),
-                           end = c((irb_e - tick - l), ira_s - tick,
-                                   ira_e - tick, irb_s - tick, l),
-                           name = c("IRB", "LSC", "IRA", "SSC", "IRB"),
-                           text = c(paste("IRB:", irb_len),
-                                   paste("LSC:", lsc_len),
-                                   paste("IRA:", irb_len),
-                                   paste("SSC:", ssc_len),
-                                   ""),
-                           stringsAsFactors = FALSE)
+    if ((irb_e-tick-l) == 0) {
+      ir_table <- data.frame(chr = rep ("chr1", 4),
+                             start = c(1, ira_s - tick,
+                                       ira_e - tick, irb_s - tick) - 1, # -1 for
+                             # all start points to transfer 1-base coordinate to 0-base
+                             end = c(ira_s - tick, ira_e - tick, irb_s - tick, l),
+                             name = c("LSC", "IRA", "SSC", "IRB"),
+                             text = c(paste("LSC:", lsc_len),
+                                      paste("IRA:", irb_len),
+                                      paste("SSC:", ssc_len),
+                                      paste("IRB:", irb_len)),
+                             stringsAsFactors = FALSE)
+    } else {
+      ir_table <- data.frame(chr = rep ("chr1", 5),
+                             start = c(1, (irb_e - tick - l), ira_s - tick,
+                                       ira_e - tick, irb_s - tick) - 1, # -1 for
+                             # all start points to transfer 1-base coordinate to 0-base
+                             end = c((irb_e - tick - l), ira_s - tick,
+                                     ira_e - tick, irb_s - tick, l),
+                             name = c("IRB", "LSC", "IRA", "SSC", "IRB"),
+                             text = c(paste("IRB:", irb_len),
+                                      paste("LSC:", lsc_len),
+                                      paste("IRA:", irb_len),
+                                      paste("SSC:", ssc_len),
+                                      ""),
+                             stringsAsFactors = FALSE)
+    }
   }
 
   # Add text coordinates
   ir_table$center <- round((ir_table$start + ir_table$end)/2, 0)
-  ir_table$center[1] <- ir_table$center[1] + round(l/2) + round(ir_table$start[5]/2)
+  if (nrow(ir_table) == 5){
+    ir_table$center[1] <- ir_table$center[1] + round(l/2) + round(ir_table$start[5]/2)
+  }
+
   if(ir_table$center[1] > l){
     ir_table$center[1] <- ir_table$center[1] - l
   }
@@ -165,7 +200,6 @@ irDetect <- function(genome, seed.size = 1000) {
     ir_table$text <- sub("SSC", "LSC", ir_table$text, fixed = TRUE)
     ir_table$text <- sub("tmp", "SSC", ir_table$text, fixed = TRUE)
   }
-
 
   return(list(ir_table = ir_table, indel_table = indel_table))
 
