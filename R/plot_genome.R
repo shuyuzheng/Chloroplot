@@ -36,7 +36,6 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
       #genome <<- rdnFixer(genome)
       l <<- Biostrings::nchar(genome)
       gene_table <<- geneTableParsed(gb, genome)
-
     })
 
   } else {

@@ -9,7 +9,7 @@ irDetect <- function(genome, seed.size = 1000) {
   l <- Biostrings::nchar(genome_rc)
 
   # set seeds start points
-  seed_starts <- seq(1, (l - seed.size))
+  seed_starts <- seq(1, (l - seed.size + 1))
 
   other_letter <- Biostrings::letterFrequency(genome, letters = "ATCG") != l
 
@@ -36,7 +36,7 @@ irDetect <- function(genome, seed.size = 1000) {
   }
 
   # if IRB cover genome end point, shift the genome sequence forward with seed.size
-  while(m$group[nrow(m)] + seed.size == l){
+  while(m$group[nrow(m)] + seed.size - 1 == l){
     tick <- tick - seed.size
     genome <- c(genome[(- tick + 1):l], genome[1: -tick])
     m <- map_genome(genome, seed_starts = seed_starts, seed.size = seed.size,
@@ -73,7 +73,7 @@ irDetect <- function(genome, seed.size = 1000) {
     ira_s <- pos$group_before[mismatch_group[1] - 1]
     ira_e <- pos$group_before[which.max(pos$group_diff)] + seed.size - 1
     irb_s <- l - pos$start_before[which.max(pos$group_diff)] - seed.size + 2
-    irb_e <- pos$group_after[mismatch_group[length(mismatch_group)] + 1] + seed.size
+    irb_e <- pos$group_after[mismatch_group[length(mismatch_group)] + 1] + seed.size -1
   } else {
     ira_s <- pos$group_before[1]
     ira_e <- pos$group_before[(nrow(pos)+1)/2] + seed.size - 1
@@ -81,15 +81,11 @@ irDetect <- function(genome, seed.size = 1000) {
     irb_e <- pos$group_after[nrow(pos)] + seed.size - 1
   }
 
-  # Calculate lengths of each regions
+  # Calculate lengths of each regions (1-base)
   ira_len <- ira_e - ira_s + 1
   irb_len <- irb_e - irb_s + 1
-  lsc_len <- ira_s + l - irb_e - 1
+  lsc_len <- ira_s - 1 + l - irb_e
   ssc_len <- irb_s - ira_e - 1
-
-  if (abs(ira_len - irb_len) > 10000){
-    stop("The IR regions are not in similar length.")
-  }
 
   # Detecting indels and replaces in IR-----------------------------------------
 
@@ -107,12 +103,25 @@ irDetect <- function(genome, seed.size = 1000) {
     indel_table <- NULL
   }
 
+  # If the difference between IRA length and IRB length is not equal to the
+  # number of the "insert" base pairs, the result should be wrong
+  # ir_dff <- indel_table[indel_table$mismatch_type == c("insert", "delete"),]
+  # ir_dff$ira <- ir_dff$position < ira_e & ir_dff$position > ira_s
+  # ir_dff$dff <- (ir_dff$mismatch_type == "insert") == ir_dff$ira
+  # ir_dff <- abs(sum(ifelse(ir_dff$dff, 1, -1)))
+  if (ira_len != irb_len){
+    if (is.null(indel_table) |
+        sum(indel_table$mismatch_type %in% c("insert", "delete")) == 0 |
+        abs(ira_len - irb_len) > 100){
+      stop("The IR regions are not in similar length and no indel was detected")
+    }
+  }
+
   # recover original coordinates (0-base)
   if (tick == 0) {
     ir_table <- data.frame(chr = rep("chr1", 5),
-                           start = c(1, ira_s, ira_e, irb_s, irb_e) -1, # -1 for
-                           # all start points to transfer 1-base coordinate to 0-base
-                           end = c(ira_s, ira_e, irb_s, irb_e, l),
+                           start = c(0, ira_s - 1, ira_e, irb_s - 1, irb_e),
+                           end = c(ira_s - 1, ira_e, irb_s - 1, irb_e, l),
                            name = c("LSC", "IRA", "SSC", "IRB", "LSC"),
                            text = c(paste("LSC:", lsc_len),
                                     paste("IRA:", ira_len),
@@ -121,13 +130,12 @@ irDetect <- function(genome, seed.size = 1000) {
                                     ""),
                            stringsAsFactors = FALSE)
   } else if (tick > 0) {
-    if ((ira_e - tick) == 0){
+    if ((tick - ira_s) == 0){
       ir_table <- data.frame(chr = rep("chr1", 4),
-                             start = c(1, irb_s - tick, irb_e - tick,
-                                       l-(tick - ira_s)) - 1, # -1 for
-                             # all start points to transfer 1-base coordinate to 0-base
-                             end = c(irb_s - tick, irb_e - tick,
-                                     l-(tick - ira_s), l),
+                             start = c(0, ira_e - tick, irb_s - tick,
+                                       irb_e - tick),
+                             end = c(ira_e - tick, irb_s - tick,
+                                     irb_e - tick, l),
                              name = c("IRA", "SSC", "IRB", "LSC"),
                              text = c(paste("IRA:", ira_len),
                                       paste("SSC:", ssc_len),
@@ -136,11 +144,10 @@ irDetect <- function(genome, seed.size = 1000) {
                              stringsAsFactors = FALSE)
     } else {
       ir_table <- data.frame(chr = rep ("chr1", 5),
-                             start = c(1, ira_e - tick, irb_s - tick,
-                                       irb_e - tick, l-(tick - ira_s)) - 1, # -1 for
-                             # all start points to transfer 1-base coordinate to 0-base
-                             end = c(ira_e - tick, irb_s - tick,
-                                     irb_e - tick, l-(tick - ira_s), l),
+                             start = c(0, ira_e - tick, irb_s - tick - 1,
+                                       irb_e - tick, l-(tick - ira_s) - 1),
+                             end = c(ira_e - tick, irb_s - tick - 1,
+                                     irb_e - tick, l-(tick - ira_s) - 1, l),
                              name = c("IRA", "SSC", "IRB", "LSC", "IRA"),
                              text = c(paste("IRA:", ira_len),
                                       paste("SSC:", ssc_len),
@@ -152,10 +159,10 @@ irDetect <- function(genome, seed.size = 1000) {
   } else if (tick < 0) {
     if ((irb_e-tick-l) == 0) {
       ir_table <- data.frame(chr = rep ("chr1", 4),
-                             start = c(1, ira_s - tick,
-                                       ira_e - tick, irb_s - tick) - 1, # -1 for
-                             # all start points to transfer 1-base coordinate to 0-base
-                             end = c(ira_s - tick, ira_e - tick, irb_s - tick, l),
+                             start = c(0, ira_s - tick - 1,
+                                       ira_e - tick, irb_s - tick - 1),
+                             end = c(ira_s - tick - 1, ira_e - tick,
+                                     irb_s - tick - 1, l),
                              name = c("LSC", "IRA", "SSC", "IRB"),
                              text = c(paste("LSC:", lsc_len),
                                       paste("IRA:", irb_len),
@@ -164,11 +171,10 @@ irDetect <- function(genome, seed.size = 1000) {
                              stringsAsFactors = FALSE)
     } else {
       ir_table <- data.frame(chr = rep ("chr1", 5),
-                             start = c(1, (irb_e - tick - l), ira_s - tick,
-                                       ira_e - tick, irb_s - tick) - 1, # -1 for
-                             # all start points to transfer 1-base coordinate to 0-base
-                             end = c((irb_e - tick - l), ira_s - tick,
-                                     ira_e - tick, irb_s - tick, l),
+                             start = c(0, (irb_e - tick - l), ira_s - tick - 1,
+                                       ira_e - tick, irb_s - tick - 1),
+                             end = c((irb_e - tick - l), ira_s - tick - 1,
+                                     ira_e - tick, irb_s - tick - 1, l),
                              name = c("IRB", "LSC", "IRA", "SSC", "IRB"),
                              text = c(paste("IRB:", irb_len),
                                       paste("LSC:", lsc_len),
@@ -221,7 +227,7 @@ map_genome <- function(genome, seed_starts, seed.size = 1000,
     deleted_group <- setdiff(1:(length(seeds) + 1), names(m))
     m <- as.data.frame(m)
     for (i in 1:length(deleted_group)){
-      m$group[which(m$group > deleted_group[i])] <- m$group[which(m$group >= deleted_group[i])] + 1
+      m$group[which(m$group > deleted_group[i])] <- m$group[which(m$group > deleted_group[i])] + 1
     }
   } else{
     seeds <- Biostrings::PDict(seeds)
