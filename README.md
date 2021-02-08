@@ -4,13 +4,12 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <h3 align="center">TidyComb</h3>
+  <h3 align="center">Chloroplot</h3>
 
   <p align="center">
     Tidy drug combination high-throughput screening data for DrugComb portal
     <br />
-    <a href="https://irscope.shinyapps.io/chloroplot/"><strong>Chloroplot</strong></a>
-    <p> An R package for parsing and visualizing organelle genomes</p>
+    <a href="https://irscope.shinyapps.io/chloroplot/">Web Application</a>
     <br />
     <a href="https://github.com/shuyuzheng/Chloroplot/issues">Report Bug</a>
     ·
