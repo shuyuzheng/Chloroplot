@@ -18,43 +18,47 @@
 #' @importFrom magrittr %>%
 #' @import dplyr
 PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
-
+  my_env <- new.env(parent = emptyenv())
+  my_env$gb <- NULL
+  my_env$def <- NULL
+  my_env$sp_name <- NULL
+  my_env$genome <- NULL
+  my_env$l <- NULL
+  my_env$gene_table <- NULL
+  my_env$ir <- NULL
   if (local.file){
     tryCatch({
-      gb <- genbankr::readGenBank(gbfile)
-      genome <- genbankr::getSeq(gb)[[1]]
+      my_env$gb <- genbankr::readGenBank(gbfile)
+      my_env$genome <- genbankr::getSeq(my_env$gb)[[1]]
       #genome <- rdnFixer(genome)
-      l<- Biostrings::nchar(genome)
-      def <- gb@definition
-      sp_name <- sp.name(def)
-      gene_table <- geneTableRead(gb, genome)
+      my_env$l<- Biostrings::nchar(my_env$genome)
+      my_env$def <- my_env$gb@definition
+      my_env$sp_name <- sp.name(my_env$def)
+      my_env$gene_table <- geneTableRead(my_env$gb, my_env$genome)
     }, error = function(e){
-      gb <<- genbankr::parseGenBank(gbfile)
-      def <<- gb$DEFINITION
-      sp_name <<- sp.name(def)
-      genome <<- gb$ORIGIN[[1]]
-      #genome <<- rdnFixer(genome)
-      l <<- Biostrings::nchar(genome)
-      gene_table <<- geneTableParsed(gb, genome)
+      my_env$gb <- genbankr::parseGenBank(gbfile)
+      my_env$def <- my_env$gb$DEFINITION
+      my_env$sp_name <- sp.name(my_env$def)
+      my_env$genome <- my_env$gb$ORIGIN[[1]]
+      my_env$l <- Biostrings::nchar(my_env$genome)
+      my_env$gene_table <- geneTableParsed(my_env$gb, my_env$genome)
     })
 
   } else {
     tryCatch({
-      gb <- genbankr::readGenBank(text = fetch.gb(gbfile))
-      genome <- genbankr::getSeq(gb)
-      #genome <- rdnFixer(genome)
-      l <- Biostrings::nchar(genome)
-      def <- gb@definition
-      sp_name <- sp.name(df)
-      gene_table <- geneTableRead(gb, genome)
+      my_env$gb <- genbankr::readGenBank(text = fetch.gb(gbfile))
+      my_env$genome <- genbankr::getSeq(my_env$gb)
+      my_env$l <- Biostrings::nchar(my_env$genome)
+      my_env$def <- my_env$gb@definition
+      my_env$sp_name <- sp.name(my_env$df)
+      my_env$gene_table <- geneTableRead(my_env$gb, my_env$genome)
     }, error = function(e){
-      gb <<- genbankr::parseGenBank(text = fetch.gb(gbfile))
-      def <<- gb$DEFINITION
-      sp_name <<- sp.name(def)
-      genome <<- gb$ORIGIN[[1]]
-      #genome <<- rdnFixer(genome)
-      l <<- Biostrings::nchar(genome)
-      gene_table <<- geneTableParsed(gb, genome)
+      my_env$gb <- genbankr::parseGenBank(text = fetch.gb(gbfile))
+      my_env$def <- my_env$gb$DEFINITION
+      my_env$sp_name <- sp.name(my_env$def)
+      my_env$genome <- my_env$gb$ORIGIN[[1]]
+      my_env$l <- Biostrings::nchar(my_env$genome)
+      my_env$gene_table <- geneTableParsed(my_env$gb, my_env$genome)
     })
   }
 
@@ -62,7 +66,7 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
 
   plastid <- TRUE
 
-  if (grepl("mitochondrion", def)){
+  if (grepl("mitochondrion", my_env$def)){
     plastid <- FALSE
   }
 
@@ -72,42 +76,42 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
   # closing the ends.
   if (plastid){
     tryCatch({
-      ir <- irDetect(genome, seed.size = 100)
+      my_env$ir <- irDetect(my_env$genome, seed.size = 100)
     }, error = function(e){
-      ir <<- irDetect(genome, seed.size = 1000)
+      my_env$ir <- irDetect(my_env$genome, seed.size = 1000)
     })
     gene_class <- c("psa","psb","pet","atp","ndh","rbc","rpo","rps","rpl",
                   "clp|mat|inf","ycf","trn","rrn")
   } else {
-    ir <- list(ir_table = NULL, indel_table = NULL)
+    my_env$ir <- list(ir_table = NULL, indel_table = NULL)
     gene_class <- c("nad|nd","sdh","cob","cox|cytb","atp","ccmF","mtt","rps","rpl",
                   "mat","orf","trn","rrn")
   }
 
-  gene_table$class <- rep("OTHER", nrow(gene_table))
+  my_env$gene_table$class <- rep("OTHER", nrow(my_env$gene_table))
 
   for (i in gene_class){
-    gene_table$class[which(grepl(as.character(i),
-                                gene_table$gene, perl = TRUE,
+    my_env$gene_table$class[which(grepl(as.character(i),
+                                 my_env$gene_table$gene, perl = TRUE,
                                 ignore.case = TRUE))] <- i
   }
 
   # 3. GC count -------------------------------------------------------------
-  if (l > 500000){
+  if (my_env$l > 500000){
     gc.window <- 200
-  } else if (l < 100000){
+  } else if (my_env$l < 100000){
     gc.window <- 50
   }
-  gc_count_list <- gc_count(genome, view.width = gc.window)
+  gc_count_list <- gc_count(my_env$genome, view.width = gc.window)
   gc_count <- gc_count_list[[1]]
   gc_total <- gc_count_list[[2]]
   gc_count$chr <- rep("chr1", nrow(gc_count))
   gc_count <- select(gc_count, chr, position, gc_count)
 
-  tables <- list(ir_table = ir$ir_table, indel_table = ir$indel_table,
+  tables <- list(ir_table = my_env$ir$ir_table, indel_table = my_env$ir$indel_table,
                  gc_count = gc_count, gc_total = gc_total, plastid = plastid,
-                 sp_name = sp_name, genome_len = l, gene_table = gene_table,
-                 genome = genome)
+                 sp_name = my_env$sp_name, genome_len = my_env$l, gene_table = my_env$gene_table,
+                 genome = my_env$genome)
 
 
   return(tables)

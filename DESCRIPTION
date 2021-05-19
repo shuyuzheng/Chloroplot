@@ -1,7 +1,7 @@
 Package: chloroplot
 Type: Package
 Title: A package to plot Chloroplast genome.
-Version: 0.2.2
+Version: 0.2.3
 Author: Shuyu Zheng, Ali Amiryousefi
 Maintainer: Shuyu <shuyu.zheng@helsinki.fi>
 Depends: R (>= 3.6.0)
