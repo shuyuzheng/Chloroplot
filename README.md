@@ -61,7 +61,7 @@ library(devtools)
 2. To install **Chloroplot** from [GitHub](https://github.com/), you'd type:
 
 ```
-devtools::install_github("DrugComb/Chloroplot")
+devtools::install_github("shuyuzheng/Chloroplot")
 ```
 
 ## Usage
