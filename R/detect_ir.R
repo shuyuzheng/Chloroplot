@@ -62,7 +62,7 @@ irDetect <- function(genome, seed.size = 1000) {
     dplyr::arrange(group_before)
 
   # get start and end points for IRA and IRB (1-base)
-  if (sum(pos$start_diff < 0) > 0){
+  # if (sum(pos$start_diff < 0) > 0){
     tmp <- pos[pos$start_diff < 0, ]
     pos <- rbind.data.frame(pos, df[which(df$group_diff %in% tmp$group_diff) - 1, ],
                             df[which(df$group_diff %in% tmp$group_diff) + 1, ]) %>%
@@ -74,12 +74,12 @@ irDetect <- function(genome, seed.size = 1000) {
     ira_e <- pos$group_before[which.max(pos$group_diff)] + seed.size - 1
     irb_s <- l - pos$start_before[which.max(pos$group_diff)] - seed.size + 2
     irb_e <- pos$group_after[mismatch_group[length(mismatch_group)] + 1] + seed.size -1
-  } else {
-    ira_s <- pos$group_before[1]
-    ira_e <- pos$group_before[(nrow(pos)+1)/2] + seed.size - 1
-    irb_s <- pos$group_after[(nrow(pos)+1)/2]
-    irb_e <- pos$group_after[nrow(pos)] + seed.size - 1
-  }
+  # } else {
+    # ira_s <- pos$group_before[1]
+    # ira_e <- pos$group_before[(nrow(pos)+1)/2] + seed.size - 1
+    # irb_s <- pos$group_after[(nrow(pos)+1)/2]
+    # irb_e <- pos$group_after[nrow(pos)] + seed.size - 1
+  # }
 
   # Calculate lengths of each regions (1-base)
   ira_len <- ira_e - ira_s + 1
@@ -111,8 +111,9 @@ irDetect <- function(genome, seed.size = 1000) {
   # ir_dff <- abs(sum(ifelse(ir_dff$dff, 1, -1)))
   if (ira_len != irb_len){
     if (is.null(indel_table) |
-        sum(indel_table$mismatch_type %in% c("insert", "delete")) == 0 |
-        abs(ira_len - irb_len) > 100){
+        sum(indel_table$mismatch_type %in% c("insert", "delete")) == 0 #|
+        # abs(ira_len - irb_len) > 100
+        ){
       stop("The IR regions are not in similar length and no indel was detected")
     }
   }
