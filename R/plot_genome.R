@@ -415,7 +415,7 @@ PlotPlastidGenome <- function(plot.tables, save = TRUE, file.type = "pdf",
   gene_table <- dplyr::left_join(gene_table, color_table, by = c("class" = "acronym"))
 
   gene_table <- gene_table[which(gene_table$class %in% show.genes), ]
-
+  gene_table$gene <- gsub('(.{1,20})(\\s|$)', '\\1\n', gene_table$gene)
   color_table <- color_table[which(color_table$acronym %in% unique(gene_table$class)), ]
 
   # gene labels
