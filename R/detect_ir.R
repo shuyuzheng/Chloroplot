@@ -38,7 +38,7 @@ irDetect <- function(genome, seed.size = 1000) {
   # if IRB cover genome end point, shift the genome sequence forward with seed.size
   while(m$group[nrow(m)] + seed.size - 1 == l){
     tick <- tick - seed.size
-    genome <- c(genome[(- seed.size + 1):l], genome[1: -seed.size])
+    genome <- c(genome[(seed.size + 1):l], genome[1: seed.size])
     m <- map_genome(genome, seed_starts = seed_starts, seed.size = seed.size,
                     other_letter = other_letter)
   }
