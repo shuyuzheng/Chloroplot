@@ -79,6 +79,8 @@ PlotTab <- function(gbfile, local.file = FALSE, gc.window = 100){
       my_env$ir <- irDetect(my_env$genome, seed.size = 100)
     }, error = function(e){
       my_env$ir <- irDetect(my_env$genome, seed.size = 1000)
+    }, warning = function(w) {
+      my_env$ir <- irDetect(my_env$genome, seed.size = 1000)
     })
     gene_class <- c("psa","psb","pet","atp","ndh","rbc","rpo","rps","rpl",
                   "clp|mat|inf","ycf","trn","rrn")
