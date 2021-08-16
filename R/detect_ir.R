@@ -111,8 +111,8 @@ irDetect <- function(genome, seed.size = 1000) {
   # ir_dff <- abs(sum(ifelse(ir_dff$dff, 1, -1)))
   if (ira_len != irb_len){
     if (is.null(indel_table) |
-        sum(indel_table$mismatch_type %in% c("insert", "delete")) == 0 #|
-        # abs(ira_len - irb_len) > 100
+        sum(indel_table$mismatch_type %in% c("insert", "delete")) == 0 |
+        abs(ira_len - irb_len) > 1000
         ){
       stop("The IR regions are not in similar length and no indel was detected")
     }
