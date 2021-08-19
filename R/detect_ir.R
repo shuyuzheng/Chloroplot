@@ -2,11 +2,8 @@ irDetect <- function(genome, seed.size = 1000) {
   tick = 0
 
   # Matching seeds to genome ------------------------------------------------
-  # Get the reverse complement version of genome
-  genome_rc <- Biostrings::reverseComplement(genome)
-
   # Get the length of genome
-  l <- Biostrings::nchar(genome_rc)
+  l <- Biostrings::nchar(genome)
 
   # set seeds start points
   seed_starts <- seq(1, (l - seed.size + 1))
@@ -87,6 +84,10 @@ irDetect <- function(genome, seed.size = 1000) {
   lsc_len <- ira_s - 1 + l - irb_e
   ssc_len <- irb_s - ira_e - 1
 
+  if (abs(ira_len - irb_len) > 1000){
+    warning("The difference between IR regions is larger than 1000 bp")
+  }
+
   # Detecting indels and replaces in IR-----------------------------------------
 
   if (nrow(pos) > 3){
@@ -114,9 +115,6 @@ irDetect <- function(genome, seed.size = 1000) {
         sum(indel_table$mismatch_type %in% c("insert", "delete")) == 0
         ){
       stop("The IR regions are not in similar length and no indel was detected")
-    }
-    if (abs(ira_len - irb_len) > 1000){
-      warning("The difference between IR regions is larger than 1000 bp")
     }
   }
 
